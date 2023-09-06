@@ -13,6 +13,7 @@ export interface BotContext extends Context {
 export const bot = new Telegraf<BotContext>(token);
 
 bot.telegram.setMyCommands(descriptions);
+bot.telegram.setMyDescription('Розклад для студентів лнту');
 
 bot.use(async (ctx, next) => {
     if (!ctx.from) return;

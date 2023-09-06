@@ -28,9 +28,6 @@ export const sendSchedule = async (ctx: BotContext, options: Options) => {
     const end = new Date(start);
     end.setDate(end.getDate() + options.days - 1);
 
-
-    console.log(start.toLocaleDateString(), end.toLocaleDateString());
-
     let studyGroup = ctx.user.studyGroup;
 
     if (!studyGroup) {
@@ -60,7 +57,5 @@ export const sendSchedule = async (ctx: BotContext, options: Options) => {
         await ctx.replyWithMarkdownV2(message);
     }
 
-    if (schedule.length === 0) {
-        await ctx.sendMessage('Розклад не знайдено');
-    }
+    if (schedule.length === 0) await ctx.sendMessage('Розклад не знайдено');
 }
