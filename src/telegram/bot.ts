@@ -1,6 +1,7 @@
 import { Context, Telegraf } from 'telegraf';
 import { User } from '@prisma/client';
 import { prisma } from '../main';
+import { descriptions } from './commands/descriptions';
 
 const token = process.env.TELEGRAM_TOKEN;
 if (!token) throw new Error('Telegram bot token is not defined');
@@ -10,12 +11,8 @@ export interface BotContext extends Context {
 }
 
 export const bot = new Telegraf<BotContext>(token);
-bot.telegram.setMyCommands([
-    { command: 'start', description: 'Почати' },
-    { command: 'setgroup', description: 'Змінити групу' },
-    { command: 'setdata', description: 'Змінити дані' },
-    { command: 'schedule', description: 'Розклад на поточний тиждень' },
-]);
+
+bot.telegram.setMyCommands(descriptions);
 
 bot.use(async (ctx, next) => {
     if (!ctx.from) return;
@@ -41,4 +38,6 @@ bot.launch();
 import './commands/start';
 import './commands/setgroup';
 import './commands/setdata';
-import './commands/schedule';
+import './commands/day';
+import './commands/next';
+import './commands/week';

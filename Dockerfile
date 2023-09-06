@@ -6,6 +6,8 @@ COPY ./package.json /app/
 
 RUN yarn
 
+COPY ./prisma/ /app/
+
 RUN yarn prisma generate
 
 COPY . /app/

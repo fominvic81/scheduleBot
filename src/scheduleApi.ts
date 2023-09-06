@@ -68,21 +68,10 @@ export interface ScheduleDay {
     classes: ScheduleClass[];
 }
 
-export const getSchedule = async (studyGroupKey: string) => {
+export const getSchedule = async (studyGroupKey: string, startDate: Date, endDate: Date) => {
 
-    const start = new Date();
-
-    // if it is sunday or monday get schedule for next week
-    if (start.getDay() <= 1) start.setDate(start.getDate() + 7);
-    
-    // Find last tuesday
-    start.setDate(start.getDate() - (start.getDay() + 5) % 7);
-
-    const end = new Date(start);
-    end.setDate(end.getDate() + 7);
-
-    const startString = start.toLocaleDateString('en-GB').replace(/\//g, '.');
-    const endString = end.toLocaleDateString('en-GB').replace(/\//g, '.');
+    const startString = startDate.toLocaleDateString('en-GB').replace(/\//g, '.');
+    const endString = endDate.toLocaleDateString('en-GB').replace(/\//g, '.');
 
     const response = await axios(`https://vnz.osvita.net/BetaSchedule.asmx/GetScheduleDataX`, {
         params: {

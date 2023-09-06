@@ -84,7 +84,7 @@ export const askGroup = async (ctx: BotContext, replyWithChosen: boolean = true)
     ctx.user = await prisma.user.update({
         where: { id: ctx.user.id },
         data: {
-            studyGroup: studyGroup as {},
+            studyGroup: studyGroup.Key,
         },
     });
 
