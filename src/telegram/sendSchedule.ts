@@ -3,6 +3,14 @@ import { askGroup } from './askData';
 import { BotContext } from './bot';
 
 
+const escapeMsg = (str: string) => {
+    str = str.replace(/\./g, '\\.');
+    str = str.replace(/\-/g, '\\-');
+    str = str.replace(/\_/g, '\\_');
+    str = str.replace(/\*/g, '\\*');
+    return str;
+}
+
 interface Options {
     forward?: number;
     days?: number;
@@ -40,19 +48,17 @@ export const sendSchedule = async (ctx: BotContext, options: Options) => {
 
     for (const day of schedule) {
         let message = '';
-        message += `${day.weekday}, ${day.date}\n`;
+        message += `${escapeMsg(day.weekday)}, ${escapeMsg(day.date)}\n`;
 
         for (const class1 of day.classes) {
+            message += `*${escapeMsg(class1.class)}*\n`;
+            message += `Час: ${escapeMsg(class1.begin)}\\-${escapeMsg(class1.end)}\n`;
+            message += `Предмет: ${escapeMsg(class1.descipline)}\n`;
+            message += `Вчитель: ${escapeMsg(class1.employee)}\n`;
+            message += `Кабінет: ${escapeMsg(class1.cabinet)}\n`;
+            message += `Тип заняття: ${escapeMsg(class1.type)}\n`;
             message += `\n`;
-            message += `*${class1.class}*\n`;
-            message += `Час: ${class1.begin}-${class1.end}\n`;
-            message += `Предмет: ${class1.descipline}\n`;
-            message += `Вчитель: ${class1.employee}\n`;
-            message += `Тип заняття: ${class1.type}\n`;
         }
-
-        message = message.replace(/\./g, '\\.');
-        message = message.replace(/\-/g, '\\-');
 
         await ctx.replyWithMarkdownV2(message);
     }

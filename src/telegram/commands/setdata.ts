@@ -1,6 +1,6 @@
-import { bot } from '../bot';
 import { askData } from '../askData';
+import { command } from './command';
 
-bot.command('setdata', (ctx) => {
+command('setdata', (ctx) => {
     askData(ctx);
 });

@@ -16,6 +16,7 @@ bot.telegram.setMyCommands(descriptions);
 bot.telegram.setMyDescription('Розклад для студентів лнту');
 
 bot.use(async (ctx, next) => {
+
     if (!ctx.from) return;
     const id = ctx.from.id;
     let user = await prisma.user.findFirst({ where: { id }});
@@ -32,7 +33,11 @@ bot.use(async (ctx, next) => {
     }
     ctx.user = user;
     await next();
-})
+});
+
+bot.catch((err, ctx) => {
+    console.error(err, ctx);
+});
 
 bot.launch();
 
@@ -42,3 +47,4 @@ import './commands/setdata';
 import './commands/day';
 import './commands/next';
 import './commands/week';
+import './commands/keyboard';

@@ -1,6 +1,6 @@
-import { bot } from '../bot';
 import { sendSchedule } from '../sendSchedule';
+import { command } from './command';
 
-bot.command('day', (ctx) => {
+command('day', (ctx) => {
     sendSchedule(ctx, { days: 1 });
 });

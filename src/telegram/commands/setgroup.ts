@@ -1,6 +1,6 @@
-import { bot } from '../bot';
 import { askGroup } from '../askData';
+import { command } from './command';
 
-bot.command('setgroup', (ctx) => {
+command('setgroup', (ctx) => {
     askGroup(ctx);
 });

@@ -1,8 +1,8 @@
-import { bot } from '../bot';
 import { askData } from '../askData';
 import { descriptions } from './descriptions';
+import { command } from './command';
 
-bot.start(async (ctx) => {
+command('start', async (ctx) => {
 
     await ctx.reply(
         'Я бот, що дозволяє зручно та швидко слідкувати за розкладом занять в ЛНТУ\n' + 

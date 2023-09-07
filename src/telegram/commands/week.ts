@@ -1,7 +1,7 @@
-import { bot } from '../bot';
 import { sendSchedule } from '../sendSchedule';
+import { command } from './command';
 
-bot.command('week', (ctx) => {
+command('week', (ctx) => {
     let forward = parseInt(ctx.payload);
     if (Number.isNaN(forward)) forward = 0;
     
