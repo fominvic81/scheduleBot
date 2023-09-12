@@ -32,6 +32,14 @@ bot.use(async (ctx, next) => {
         });
     }
     ctx.user = user;
+
+    if (ctx.updateType == 'message') {
+        await prisma.user.update({
+            where: { id: user.id },
+            data: { messages: { increment: 1 }},
+        });
+    }
+
     await next();
 });
 

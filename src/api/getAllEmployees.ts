@@ -30,9 +30,7 @@ const updateEmployeeCache = async (): Promise<Employee[]> => {
 
     const cache = await prisma.employeeCache.create({
         data: {
-            employees: {
-                create: employees.map((value) => ({ key: value.id, name: value.name })),
-            },
+            employees: employees.map((value) => ({ key: value.id, name: value.name })),
             date: new Date(),
         },
     });
@@ -51,7 +49,7 @@ export const getAllEmployees = async (): Promise<Employee[]> => {
     if (currentPromise) return currentPromise;
 
     const promise = new Promise<Employee[]>(async (resolve) => {
-        const cache = await prisma.employeeCache.findFirst({ select: { id: true, employees: true, date: true }});
+        const cache = await prisma.employeeCache.findFirst();
     
         if (cache) {
             if (Date.now() - cache.date.getTime() > hour) updateEmployeeCache();

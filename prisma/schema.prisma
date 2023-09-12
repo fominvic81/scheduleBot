@@ -9,6 +9,7 @@ datasource db {
 
 model User {
   id            Int     @id @map("_id")
+  messages      Int     @default(0)
   firstname     String
   lastname      String?
   username      String?
@@ -24,10 +25,7 @@ model EmployeeCache {
   employees Employee[]
 }
 
-model Employee {
-  id              String         @id @default(auto()) @map("_id") @db.ObjectId
-  name            String
-  key             String
-  EmployeeCache   EmployeeCache? @relation(fields: [employeeCacheId], references: [id])
-  employeeCacheId String?        @db.ObjectId
+type Employee {
+  name  String
+  key   String
 }
