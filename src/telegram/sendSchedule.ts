@@ -1,4 +1,6 @@
-import { getSchedule } from '../scheduleApi';
+import { getAllEmployees } from '../api/getAllEmployees';
+import { getEmployeeSchedule } from '../api/getEmployeeSchedule';
+import { getSchedule } from '../api/getSchedule';
 import { askGroup } from './askData';
 import { BotContext } from './bot';
 
@@ -8,6 +10,8 @@ const escapeMsg = (str: string) => {
     str = str.replace(/\-/g, '\\-');
     str = str.replace(/\_/g, '\\_');
     str = str.replace(/\*/g, '\\*');
+    str = str.replace(/\(/g, '\\(');
+    str = str.replace(/\)/g, '\\)');
     return str;
 }
 
@@ -44,19 +48,23 @@ export const sendSchedule = async (ctx: BotContext, options: Options) => {
 
     const studyGroupKey = studyGroup;
 
-    const schedule = await getSchedule(studyGroupKey, start, end);
+    const schedule = await getSchedule(studyGroupKey, start, end, true);
 
     for (const day of schedule) {
         let message = '';
-        message += `${escapeMsg(day.weekday)}, ${escapeMsg(day.date)}\n`;
+        message += `${escapeMsg(day.weekday)}, ${escapeMsg(day.date)}\n\n`;
 
         for (const class1 of day.classes) {
-            message += `*${escapeMsg(class1.class)}*\n`;
+
+            message += `⚪ *${escapeMsg(class1.class)}*\n`;
             message += `Час: ${escapeMsg(class1.begin)}\\-${escapeMsg(class1.end)}\n`;
             message += `Предмет: ${escapeMsg(class1.descipline)}\n`;
             message += `Вчитель: ${escapeMsg(class1.employee)}\n`;
             message += `Кабінет: ${escapeMsg(class1.cabinet)}\n`;
             message += `Тип заняття: ${escapeMsg(class1.type)}\n`;
+
+            if (class1.groups.length > 0) message += `Групи: ${class1.groups.map((value) => escapeMsg(value)).join(', ')}\n`;
+
             message += `\n`;
         }
 

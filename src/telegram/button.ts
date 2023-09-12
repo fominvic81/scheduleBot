@@ -1,4 +1,4 @@
-import { Markup, Telegraf } from 'telegraf';
+import { Markup } from 'telegraf';
 import { bot, BotContext } from './bot';
 
 type Data = Parameters<typeof Markup.inlineKeyboard>[0][number];
@@ -9,8 +9,7 @@ const callbacks: Map<number, Callback> = new Map();
 let lastId = 0;
 
 export const button = (data: DataWithoutCallback, callback: Callback): Data => {
-    // const id = lastId++;
-    const id = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
+    const id = lastId++;
 
     callbacks.set(id, callback);
 

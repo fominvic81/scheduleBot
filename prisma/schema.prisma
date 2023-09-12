@@ -17,3 +17,17 @@ model User {
   course        String?
   studyGroup    String?
 }
+
+model EmployeeCache {
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  date      DateTime
+  employees Employee[]
+}
+
+model Employee {
+  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  key             String
+  EmployeeCache   EmployeeCache? @relation(fields: [employeeCacheId], references: [id])
+  employeeCacheId String?        @db.ObjectId
+}

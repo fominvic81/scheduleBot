@@ -1,8 +1,10 @@
 import { Markup } from 'telegraf';
-import { KeyValue, getFiltersData, getStudyGroupByFilters } from '../scheduleApi';
 import { BotContext, bot } from './bot';
 import { prisma } from '../main';
 import { button } from './button';
+import { KeyValue } from '../api';
+import { getFilters } from '../api/getFilters';
+import { getStudyGroups } from '../api/getStudyGroups';
 
 const ask = (ctx: BotContext, text: string, buttons: KeyValue[]) => new Promise<KeyValue>((resolve) => {
     ctx.sendMessage(text,
@@ -12,13 +14,13 @@ const ask = (ctx: BotContext, text: string, buttons: KeyValue[]) => new Promise<
                 buttonCtx.deleteMessage();
                 resolve({ Key, Value });
             })),
-            { columns: 2 },
+            { columns: 4 },
         ),
     );
 });
 
 export const askData = async (ctx: BotContext) => {
-    const filters = await getFiltersData();
+    const filters = await getFilters();
 
     const message = await ctx.sendMessage('Вкажіть дані:');
 
@@ -77,7 +79,7 @@ export const askGroup = async (ctx: BotContext, replyWithChosen: boolean = true)
         return studyGroup;
     }
 
-    const studyGroups = await getStudyGroupByFilters(faculty, educationForm, course);
+    const studyGroups = await getStudyGroups(faculty, educationForm, course);
 
     const studyGroup = await ask(ctx, 'Навчальна Група', studyGroups.map(value => ({ ...value })));
 

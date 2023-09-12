@@ -39,12 +39,11 @@ bot.catch((err, ctx) => {
     console.error(err, ctx);
 });
 
-bot.launch();
-
 import './commands/start';
 import './commands/setgroup';
 import './commands/setdata';
 import './commands/day';
 import './commands/next';
 import './commands/week';
+import './commands/nextnext';
 import './commands/keyboard';

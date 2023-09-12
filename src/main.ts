@@ -1,10 +1,16 @@
 import { PrismaClient } from '@prisma/client';
-import './telegram/bot';
+import { bot } from './telegram/bot';
+import { getAllEmployees } from './api/getAllEmployees';
 
 export const prisma = new PrismaClient();
 
 const main = async () => {
-    
+    await prisma.$connect();
+
+    bot.launch();
+
+    // Cache empolyees
+    await getAllEmployees();
 }
 
 main()
