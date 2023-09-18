@@ -48,7 +48,7 @@ export const sendSchedule = async (ctx: BotContext, options: Options) => {
 
     const studyGroupKey = studyGroup;
 
-    const schedule = await getSchedule(studyGroupKey, start, end, true);
+    const schedule = await getSchedule(studyGroupKey, start, end, false);
 
     for (const day of schedule) {
         let message = '';
