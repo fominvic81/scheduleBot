@@ -33,5 +33,3 @@ bot.use(async (ctx, next) => {
 bot.catch((err, ctx) => {
     console.error(err, ctx);
 });
-
-import('./commands');
