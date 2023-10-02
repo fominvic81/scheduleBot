@@ -10,7 +10,6 @@ let lastId = 0;
 
 export const button = (data: DataWithoutCallback, callback: Callback): Data => {
     const id = lastId++;
-
     callbacks.set(id, callback);
 
     return {

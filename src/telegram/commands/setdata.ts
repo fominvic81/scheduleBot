@@ -1,6 +1,6 @@
-import { askData } from '../askData';
+import { askInfo } from '../askData';
 import { command } from './command';
 
 command('setdata', (ctx) => {
-    askData(ctx);
+    askInfo(ctx);
 });

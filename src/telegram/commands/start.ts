@@ -1,4 +1,4 @@
-import { askData } from '../askData';
+import { askInfo } from '../askData';
 import { descriptions, keyboard } from './descriptions';
 import { command } from './command';
 
@@ -12,6 +12,6 @@ command('start', async (ctx) => {
     );
 
     if (!ctx.user.studyGroup) {
-        askData(ctx);
+        askInfo(ctx);
     }
 });

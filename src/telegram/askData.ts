@@ -1,10 +1,10 @@
 import { Markup } from 'telegraf';
 import { BotContext, bot } from './bot';
-import { prisma } from '../main';
 import { button } from './button';
 import { KeyValue } from '../api';
 import { getFilters } from '../api/getFilters';
 import { getStudyGroups } from '../api/getStudyGroups';
+import { User } from '../db';
 
 const ask = (ctx: BotContext, text: string, buttons: KeyValue[]) => new Promise<KeyValue>((resolve) => {
     ctx.sendMessage(text,
@@ -19,33 +19,21 @@ const ask = (ctx: BotContext, text: string, buttons: KeyValue[]) => new Promise<
     );
 });
 
-export const askData = async (ctx: BotContext) => {
+export const askInfo = async (ctx: BotContext) => {
     const filters = await getFilters();
 
     const message = await ctx.sendMessage('Вкажіть дані:');
 
-    await prisma.user.update({
-        where: { id: ctx.user.id },
-        data: {
-            course: null,
-            educationForm: null,
-            faculty: null,
-            studyGroup: null,
-        },
-    });
+    User.reset(ctx.user.id);
 
-    const course = await ask(ctx, 'Курс', filters.courses.map(value => ({ ...value })));
-    const educationForm = await ask(ctx, 'Форма Навчання', filters.educForms.map(value => ({ ...value })));
-    const faculty = await ask(ctx, 'Факультет', filters.faculties.map(value => ({ ...value })));
+    const course = await ask(ctx, 'Курс', filters.courses);
+    const educationForm = await ask(ctx, 'Форма Навчання', filters.educForms);
+    const faculty = await ask(ctx, 'Факультет', filters.faculties);
     
-    ctx.user = await prisma.user.update({
-        where: { id: ctx.user.id },
-        data: {
-            course: course.Key,
-            educationForm: educationForm.Key,
-            faculty: faculty.Key,
-        },
-    });
+    User.setInfo(ctx.user.id, faculty.Key, educationForm.Key, course.Key);
+    ctx.user.course = course.Key;
+    ctx.user.educationForm = educationForm.Key;
+    ctx.user.faculty = faculty.Key;
 
     const studyGroup = await askGroup(ctx, false);
 
@@ -75,20 +63,16 @@ export const askGroup = async (ctx: BotContext, replyWithChosen: boolean = true)
     const faculty = ctx.user.faculty;
 
     if (!course || !educationForm || !faculty) {
-        const { studyGroup } = await askData(ctx);
+        const { studyGroup } = await askInfo(ctx);
         return studyGroup;
     }
-
+    
     const studyGroups = await getStudyGroups(faculty, educationForm, course);
 
-    const studyGroup = await ask(ctx, 'Навчальна Група', studyGroups.map(value => ({ ...value })));
+    const studyGroup = await ask(ctx, 'Навчальна Група', studyGroups);
 
-    ctx.user = await prisma.user.update({
-        where: { id: ctx.user.id },
-        data: {
-            studyGroup: studyGroup.Key,
-        },
-    });
+    User.setStudyGroup(ctx.user.id, studyGroup.Key);
+    ctx.user.studyGroup = studyGroup.Key
 
     if (replyWithChosen) {
         ctx.sendMessage(`Навчальна група: ${studyGroup.Value}`);

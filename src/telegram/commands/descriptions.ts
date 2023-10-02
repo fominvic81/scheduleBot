@@ -15,8 +15,8 @@ export const descriptions = [
     { command: 'week', description: 'Розклад на тиждень', keyboard: true, startDesc: 'Розклад на тиждень(/week@1 - розклад на наступний тиждень)'} as const,
     { command: 'keyboard', description: 'Ввімкнути клавіатуру' } as const,
     { command: 'keyboardoff', description: 'Вимкнути клавіатуру' } as const,
-    { command: 'setgroup', description: 'Змінити групу', keyboard: true }as const,
-    { command: 'setdata', description: 'Змінити дані', keyboard: true }as const,
+    { command: 'setgroup', description: 'Змінити групу', keyboard: true } as const,
+    { command: 'setdata', description: 'Змінити дані', keyboard: true } as const,
 ] satisfies Description[];
 
 export const keyboard = Markup.keyboard(descriptions

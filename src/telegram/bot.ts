@@ -1,13 +1,13 @@
 import { Context, Telegraf } from 'telegraf';
-import { User } from '@prisma/client';
-import { prisma } from '../main';
 import { descriptions } from './commands/descriptions';
+import { User } from '../db';
+import { UserI } from '../db/types';
 
-const token = process.env.TELEGRAM_TOKEN;
+const token = Bun.env.TELEGRAM_TOKEN;
 if (!token) throw new Error('Telegram bot token is not defined');
 
 export interface BotContext extends Context {
-    user: User;
+    user: UserI;
 }
 
 export const bot = new Telegraf<BotContext>(token);
@@ -19,25 +19,12 @@ bot.use(async (ctx, next) => {
 
     if (!ctx.from) return;
     const id = ctx.from.id;
-    let user = await prisma.user.findFirst({ where: { id }});
 
-    if (!user) {
-        user = await prisma.user.create({
-            data: {
-                id,
-                firstname: ctx.from.first_name,
-                lastname: ctx.from.last_name,
-                username: ctx.from.username,
-            },
-        });
-    }
+    const user = User.findOrCreate(id, ctx.from.first_name, ctx.from.last_name, ctx.from.username);
     ctx.user = user;
 
     if (ctx.updateType == 'message') {
-        await prisma.user.update({
-            where: { id: user.id },
-            data: { messages: { increment: 1 }},
-        });
+        User.incrementMessages(user.id);
     }
 
     await next();
@@ -47,11 +34,4 @@ bot.catch((err, ctx) => {
     console.error(err, ctx);
 });
 
-import './commands/start';
-import './commands/setgroup';
-import './commands/setdata';
-import './commands/day';
-import './commands/next';
-import './commands/week';
-import './commands/nextnext';
-import './commands/keyboard';
+import('./commands');

@@ -1,4 +1,4 @@
-import { prisma } from '../main';
+import { EmployeeCache } from '../db';
 import { getEmployeesAndChairs } from './getEmployeesAndChairs';
 import { getFaculies } from './getFaculies';
 
@@ -28,16 +28,9 @@ const getAllEmployeesUncached = async (): Promise<Employee[]> => {
 const updateEmployeeCache = async (): Promise<Employee[]> => {
     const employees: Employee[] = await getAllEmployeesUncached();
 
-    const cache = await prisma.employeeCache.create({
-        data: {
-            employees: employees.map((value) => ({ key: value.id, name: value.name })),
-            date: new Date(),
-        },
-    });
-    await prisma.employeeCache.deleteMany({
-        where: {
-            id: { not: { equals: cache.id } },
-        },
+    EmployeeCache.set({
+        date: new Date(),
+        employees: employees.map((value) => ({ key: value.id, name: value.name })),
     });
 
     return employees;
@@ -49,13 +42,14 @@ export const getAllEmployees = async (): Promise<Employee[]> => {
     if (currentPromise) return currentPromise;
 
     const promise = new Promise<Employee[]>(async (resolve) => {
-        const cache = await prisma.employeeCache.findFirst();
+        const cache = EmployeeCache.get();
     
         if (cache) {
             if (Date.now() - cache.date.getTime() > hour) updateEmployeeCache();
             resolve(cache.employees.map((value) => ({ id: value.key, name: value.name })));
+            return;
         }
-    
+
         resolve(await updateEmployeeCache());
     });
     
