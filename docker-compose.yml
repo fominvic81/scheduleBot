@@ -1,0 +1,12 @@
+version: '3.9'
+
+services:
+  bot:
+    image: 'fominvic81/schedule-bot'
+    build: '.'
+    container_name: 'schedule-bot'
+    restart: always
+    environment:
+      - TELEGRAM_TOKEN=$TELEGRAM_TOKEN
+    volumes:
+      - .:/app/

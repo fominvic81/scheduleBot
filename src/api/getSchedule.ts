@@ -2,7 +2,7 @@ import axios from 'axios';
 import { getAllEmployees } from './getAllEmployees';
 import { getEmployeeSchedule } from './getEmployeeSchedule';
 
-const AGreaterThanB = (timeA: string, timeB: string): boolean => {
+const compareTime = (timeA: string, timeB: string): boolean => {
     const [hoursA, minutesA] = timeA.split(':').map(parseInt);
     const [hoursB, minutesB] = timeB.split(':').map(parseInt);
     
@@ -33,7 +33,7 @@ export interface ScheduleClass {
     type: string;
     cabinet: string;
     employee: string;
-    groups: string[];
+    groups: Promise<string[]>;
 }
 
 export interface ScheduleDay {
@@ -63,7 +63,7 @@ export const getSchedule = async (studyGroupId: string, startDate: Date, endDate
 
     const dayByDate: Map<string, ScheduleDay> = new Map();
     const promises: Promise<void>[] = [];
-
+ 
     for (const row of data) {
         promises.push(new Promise(async (resolve) => {
             let day = dayByDate.get(row.full_date);
@@ -76,24 +76,27 @@ export const getSchedule = async (studyGroupId: string, startDate: Date, endDate
                 dayByDate.set(day.date, day);
             }
         
-            const groups: string[] = [];
-        
-            if (findGroups) {
-                const employeeId = employees.get(row.employee);
-        
-                if (employeeId) {
-                    const employeeDay = (await getEmployeeSchedule(employeeId, day.date, day.date)).at(0);
-                    if (employeeDay) {
-                        const collidingClasses = employeeDay.classes.filter((value) => value.class == row.study_time);
-                        groups.push(...collidingClasses.map((value) => value.studyGroup));
+            
+            const groupsPromise = new Promise<string[]>(async (resolve) => {
+                const groups: string[] = [];
+                if (findGroups) {
+                    const employeeId = employees.get(row.employee);
+            
+                    if (employeeId) {
+                        const employeeDay = (await getEmployeeSchedule(employeeId, day.date, day.date)).at(0);
+                        if (employeeDay) {
+                            const collidingClasses = employeeDay.classes.filter((value) => value.class == row.study_time);
+                            groups.push(...collidingClasses.map((value) => value.studyGroup));
+                        } else {
+                            console.error('Could not get employee day');
+                        }
                     } else {
-                        console.error('Could not get employee day');
+                        console.error('Could not find employee id by name');
                     }
-                } else {
-                    console.error('Could not find employee id by name');
+                    groups.sort();
                 }
-                groups.sort();
-            }
+                resolve(groups);
+            });
         
             day.classes.push({
                 class: row.study_time,
@@ -103,7 +106,7 @@ export const getSchedule = async (studyGroupId: string, startDate: Date, endDate
                 type: row.study_type,
                 cabinet: row.cabinet,
                 employee: row.employee,
-                groups,
+                groups: groupsPromise,
             });
             resolve();
         }));
@@ -111,7 +114,7 @@ export const getSchedule = async (studyGroupId: string, startDate: Date, endDate
     await Promise.all(promises);
 
     const days = [...dayByDate.values()].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    days.forEach((day) => day.classes.sort((a, b) => AGreaterThanB(a.begin, b.begin) ? 1 : -1));
+    days.forEach((day) => day.classes.sort((a, b) => compareTime(a.begin, b.begin) ? 1 : -1));
 
     return days;
 }
