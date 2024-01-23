@@ -62,56 +62,51 @@ export const getSchedule = async (studyGroupId: string, startDate: Date, endDate
     const employees = new Map((await getAllEmployees()).map((value) => ([value.name, value.id])));
 
     const dayByDate: Map<string, ScheduleDay> = new Map();
-    const promises: Promise<void>[] = [];
  
     for (const row of data) {
-        promises.push(new Promise(async (resolve) => {
-            let day = dayByDate.get(row.full_date);
-            if (!day) {
-                day = {
-                    weekday: row.week_day,
-                    date: row.full_date,
-                    classes: [],
-                };
-                dayByDate.set(day.date, day);
-            }
+        let day = dayByDate.get(row.full_date);
+        if (!day) {
+            day = {
+                weekday: row.week_day,
+                date: row.full_date,
+                classes: [],
+            };
+            dayByDate.set(day.date, day);
+        }
+    
         
-            
-            const groupsPromise = new Promise<string[]>(async (resolve) => {
-                const groups: string[] = [];
-                if (findGroups) {
-                    const employeeId = employees.get(row.employee);
-            
-                    if (employeeId) {
-                        const employeeDay = (await getEmployeeSchedule(employeeId, day.date, day.date)).at(0);
-                        if (employeeDay) {
-                            const collidingClasses = employeeDay.classes.filter((value) => value.class == row.study_time);
-                            groups.push(...collidingClasses.map((value) => value.studyGroup));
-                        } else {
-                            console.error('Could not get employee day');
-                        }
+        const groupsPromise = new Promise<string[]>(async (resolve) => {
+            const groups: string[] = [];
+            if (findGroups) {
+                const employeeId = employees.get(row.employee);
+        
+                if (employeeId) {
+                    const employeeDay = (await getEmployeeSchedule(employeeId, day.date, day.date)).at(0);
+                    if (employeeDay) {
+                        const collidingClasses = employeeDay.classes.filter((value) => value.class == row.study_time);
+                        groups.push(...collidingClasses.map((value) => value.studyGroup));
                     } else {
-                        console.error('Could not find employee id by name');
+                        console.error('Could not get employee day');
                     }
-                    groups.sort();
+                } else {
+                    console.error('Could not find employee id by name');
                 }
-                resolve(groups);
-            });
-        
-            day.classes.push({
-                class: row.study_time,
-                begin: row.study_time_begin,
-                end: row.study_time_end,
-                descipline: row.discipline,
-                type: row.study_type,
-                cabinet: row.cabinet,
-                employee: row.employee,
-                groups: groupsPromise,
-            });
-            resolve();
-        }));
+                groups.sort();
+            }
+            resolve(groups);
+        });
+    
+        day.classes.push({
+            class: row.study_time,
+            begin: row.study_time_begin,
+            end: row.study_time_end,
+            descipline: row.discipline,
+            type: row.study_type,
+            cabinet: row.cabinet,
+            employee: row.employee,
+            groups: groupsPromise,
+        });
     }
-    await Promise.all(promises);
 
     const days = [...dayByDate.values()].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     days.forEach((day) => day.classes.sort((a, b) => compareTime(a.begin, b.begin) ? 1 : -1));
