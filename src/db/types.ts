@@ -10,6 +10,7 @@ export interface UserI {
     educationForm: string;
     course: string;
     studyGroup: string;
+    isAdmin: boolean;
 }
 
 export interface EmployeeCacheI {

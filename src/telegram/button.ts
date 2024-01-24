@@ -1,9 +1,9 @@
-import { Markup } from 'telegraf';
-import { bot, BotContext } from './bot';
+import { Context, Markup } from 'telegraf';
+import { bot } from './bot';
 
 type Data = Parameters<typeof Markup.inlineKeyboard>[0][number];
 type DataWithoutCallback = Omit<Data, 'callback_data'>;
-type Callback = (context: BotContext) => any;
+type Callback = (context: Context) => any;
 
 const callbacks: Map<number, Callback> = new Map();
 let lastId = 0;

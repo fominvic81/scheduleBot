@@ -3,13 +3,14 @@ import { askGroup } from './askData';
 import { BotContext, bot } from './bot';
 
 
-const escapeMsg = (str: string) => {
+export const escapeMsg = (str: string) => {
     str = str.replace(/\./g, '\\.');
     str = str.replace(/\-/g, '\\-');
     str = str.replace(/\_/g, '\\_');
     str = str.replace(/\*/g, '\\*');
     str = str.replace(/\(/g, '\\(');
     str = str.replace(/\)/g, '\\)');
+    str = str.replace(/\!/g, '\\!');
     return str;
 }
 

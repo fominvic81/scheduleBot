@@ -9,12 +9,19 @@ const db = new Database('db.sqlite', {
 db.run('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, messages INTEGER DEFAULT 0, firstname TEXT, lastname TEXT, username TEXT, faculty TEXT, educationForm TEXT, course TEXT, studyGroup TEXT)');
 db.run('CREATE TABLE IF NOT EXISTS employeeCache (id INTEGER PRIMARY KEY AUTOINCREMENT, date INTEGER, employees TEXT)');
 
+if (!db.query('PRAGMA table_info(users)').all().map((value: any) => value.name).includes('isAdmin')) {
+    db.run('ALTER TABLE users ADD isAdmin BOOLEAN NOT NULL DEFAULT false')
+}
+
 export class User {
     private static readonly createQuery = db.query('INSERT INTO users (id, firstname, lastname, username) VALUES($id, $firstname, $lastname, $username) RETURNING *');
     private static readonly findQuery = db.query('SELECT * FROM users WHERE id = $id');
+    private static readonly findByUsernameQuery = db.query('SELECT * FROM users WHERE username = $username');
+    private static readonly findAllQuery = db.query('SELECT * FROM users');
     private static readonly incrementMessagesQuery = db.query('UPDATE users SET messages = messages + 1 WHERE id = $id');
     private static readonly setInfoQuery = db.query('UPDATE users SET faculty = $faculty, educationForm = $educationForm, course = $course WHERE id = $id');
     private static readonly setStudyGroupQuery = db.query('UPDATE users SET studyGroup = $studyGroup WHERE id = $id');
+    private static readonly setIsAdminQuery = db.query('UPDATE users SET isAdmin = $isAdmin WHERE id = $id');
 
     static create(id: number, firstname: string, lastname?: string, username?: string) {
         const user = this.createQuery.get({
@@ -29,8 +36,19 @@ export class User {
     static find(id: number) {
         const user = this.findQuery.get({
             $id: id,
-        }) as UserI;
+        }) as UserI | undefined;
         return user;    
+    }
+
+    static findByUsername(username: string) {
+        const user = this.findByUsernameQuery.get({
+            $username: username,
+        }) as UserI | undefined;
+        return user;
+    }
+
+    static findAll() {
+        return this.findAllQuery.all() as UserI[];
     }
 
     static findOrCreate(id: number, firstname: string, lastname?: string, username?: string) {
@@ -63,6 +81,13 @@ export class User {
     static reset(id: number) {
         this.setInfo(id);
         this.setStudyGroup(id);
+    }
+
+    static setIsAdmin(id: number, value: boolean) {
+        this.setIsAdminQuery.run({
+            $id: id,
+            $isAdmin: value,
+        })
     }
 
 }
