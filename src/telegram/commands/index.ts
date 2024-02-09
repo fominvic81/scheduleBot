@@ -8,3 +8,5 @@ import './week';
 import './nextnext';
 import './say';
 import './users';
+import './short';
+import './nextweek';

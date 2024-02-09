@@ -1,5 +1,6 @@
 import { Database } from 'bun:sqlite';
 import { EmployeeCacheI, UserI } from './types';
+import { CurrentKeyboardVersion } from '../const';
 
 
 const db = new Database('db.sqlite', {
@@ -12,9 +13,12 @@ db.run('CREATE TABLE IF NOT EXISTS employeeCache (id INTEGER PRIMARY KEY AUTOINC
 if (!db.query('PRAGMA table_info(users)').all().map((value: any) => value.name).includes('isAdmin')) {
     db.run('ALTER TABLE users ADD isAdmin BOOLEAN NOT NULL DEFAULT false')
 }
+if (!db.query('PRAGMA table_info(users)').all().map((value: any) => value.name).includes('keyboardVersion')) {
+    db.run('ALTER TABLE users ADD keyboardVersion INTEGER NOT NULL DEFAULT 1')
+}
 
 export class User {
-    private static readonly createQuery = db.query('INSERT INTO users (id, firstname, lastname, username) VALUES($id, $firstname, $lastname, $username) RETURNING *');
+    private static readonly createQuery = db.query('INSERT INTO users (id, firstname, lastname, username, keyboardVersion) VALUES($id, $firstname, $lastname, $username, $keyboardVersion) RETURNING *');
     private static readonly findQuery = db.query('SELECT * FROM users WHERE id = $id');
     private static readonly findByUsernameQuery = db.query('SELECT * FROM users WHERE username = $username');
     private static readonly findAllQuery = db.query('SELECT * FROM users');
@@ -22,6 +26,7 @@ export class User {
     private static readonly setInfoQuery = db.query('UPDATE users SET faculty = $faculty, educationForm = $educationForm, course = $course WHERE id = $id');
     private static readonly setStudyGroupQuery = db.query('UPDATE users SET studyGroup = $studyGroup WHERE id = $id');
     private static readonly setIsAdminQuery = db.query('UPDATE users SET isAdmin = $isAdmin WHERE id = $id');
+    private static readonly setKeyboardVersionQuery = db.query('UPDATE users SET keyboardVersion = $keyboardVersion WHERE id = $id');
 
     static create(id: number, firstname: string, lastname?: string, username?: string) {
         const user = this.createQuery.get({
@@ -29,6 +34,7 @@ export class User {
             $firstname: firstname,
             $lastname: lastname ?? null,
             $username: username ?? null,
+            $keyboardVersion: CurrentKeyboardVersion,
         }) as UserI;
         return user;
     }
@@ -88,6 +94,13 @@ export class User {
             $id: id,
             $isAdmin: value,
         })
+    }
+
+    static setKeyboardVersion(id: number, value: number) {
+        this.setKeyboardVersionQuery.run({
+            $id: id,
+            $keyboardVersion: value,
+        });
     }
 
 }

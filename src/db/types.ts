@@ -11,6 +11,7 @@ export interface UserI {
     course: string;
     studyGroup: string;
     isAdmin: boolean;
+    keyboardVersion: number;
 }
 
 export interface EmployeeCacheI {
