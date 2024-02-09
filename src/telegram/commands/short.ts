@@ -20,7 +20,7 @@ command('short', async (ctx) => {
         for (const class1 of day.classes) {
             message += `${escapeMsg(class1.class).match(/\d+/)![0]}: ${escapeMsg(class1.descipline)}, ${escapeMsg(class1.type)}\n`;
         }
-        ctx.replyWithMarkdownV2(message, isKeyboardOutdated ? keyboard : undefined);
+        await ctx.replyWithMarkdownV2(message, isKeyboardOutdated ? keyboard : undefined);
         if (isKeyboardOutdated) User.setKeyboardVersion(ctx.user.id, CurrentKeyboardVersion);
         isKeyboardOutdated = false;
     }
