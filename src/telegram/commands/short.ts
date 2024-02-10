@@ -1,7 +1,7 @@
 import { getSchedule } from '../../api/getSchedule';
 import { CurrentKeyboardVersion } from '../../const';
 import { User } from '../../db';
-import { escapeMsg, sendSchedule } from '../sendSchedule';
+import { escapeMsg } from '../sendSchedule';
 import { command } from './command';
 import { keyboard } from './commands';
 

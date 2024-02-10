@@ -6,15 +6,14 @@ import { getFilters } from '../api/getFilters';
 import { getStudyGroups } from '../api/getStudyGroups';
 import { User } from '../db';
 
-const ask = (ctx: BotContext, text: string, buttons: KeyValue[]) => new Promise<KeyValue>((resolve) => {
+export const ask = (ctx: BotContext, text: string, buttons: KeyValue[], columns = 4) => new Promise<KeyValue>((resolve) => {
     ctx.sendMessage(text,
         Markup.inlineKeyboard(
             buttons.map(({ Key, Value }) => button({ text: Value }, async (buttonCtx) => {
-
                 buttonCtx.deleteMessage();
                 resolve({ Key, Value });
             })),
-            { columns: 4 },
+            { columns },
         ),
     );
 });

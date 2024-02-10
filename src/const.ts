@@ -1,2 +1,2 @@
 
-export const CurrentKeyboardVersion = 2;
+export const CurrentKeyboardVersion = 3;

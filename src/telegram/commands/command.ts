@@ -4,9 +4,9 @@ import { commands } from './commands'
 type WithPayload<T> = T & { payload: string };
 type Callback = (ctx: WithPayload<BotContext>) => any;
 
-export const command = (command: typeof commands[number]['command'], callback: Callback) => {
+export const command = (command: typeof commands[number][number]['command'], callback: Callback) => {
 
-    const info = commands.find((value) => value.command == command);
+    const info = commands.flat().find((value) => value.command == command);
     if (!info) return console.error(`Command ${command} not found`);
 
     bot.command(command, async (ctx) => {

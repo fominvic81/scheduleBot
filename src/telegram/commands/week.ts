@@ -7,5 +7,5 @@ command('week', (ctx) => {
     
     forward *= 7;
 
-    sendSchedule(ctx, { days: 7, forward, startFromMonday: forward > 0 });
+    sendSchedule(ctx, { days: 7 - (forward == 0 ? new Date().getDay() : 0), forward, startFromMonday: forward > 0 });
 });

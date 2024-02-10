@@ -23,7 +23,7 @@ interface Options {
     startFromMonday?: boolean;
 }
 
-const dayToText = async (day: ScheduleDay, sendGroups: boolean) => {
+export const dayToText = async (day: ScheduleDay, sendGroups: boolean, sendSearching: boolean = true) => {
     let message = '';
     message += `${escapeMsg(day.weekday)}, ${escapeMsg(day.date)}\n\n`;
     for (const class1 of day.classes) {
@@ -35,7 +35,7 @@ const dayToText = async (day: ScheduleDay, sendGroups: boolean) => {
         if (sendGroups) {
             const groups = await class1.groups;
             if (groups.length > 0) message += `Групи: ${groups.map((value) => escapeMsg(value)).join(', ')}\n`;
-        } else {
+        } else if (sendSearching) {
             message += `Групи: Пошук\\.\\.\\.\n`;
         }
 
