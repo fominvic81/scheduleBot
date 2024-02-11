@@ -2,10 +2,10 @@ import { bot } from './telegram';
 import { getAllEmployees } from './api/getAllEmployees';
 
 const main = async () => {
-    bot.launch();
-
     // Cache empolyees
-    await getAllEmployees();
+    getAllEmployees();
+
+    while (true) await bot.launch().catch(console.error);
 }
 
 main();
