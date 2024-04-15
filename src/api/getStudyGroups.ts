@@ -3,7 +3,7 @@ import { KeyValue } from '.';
 
 export const getStudyGroups = async (facultyId: string, educationFormId: string, courseId: string): Promise<KeyValue[]> => {
     
-    const response = await axios(`https://vnz.osvita.net/BetaSchedule.asmx/GetStudyGroups`, {
+    const response = await axios(`https://vnz.osvita.net/WidgetSchedule.asmx/GetStudyGroups`, {
         params: {
             callback: '',
             aVuzID: 11613,

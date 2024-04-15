@@ -47,7 +47,7 @@ export const getSchedule = async (studyGroupId: string, startDate: Date, endDate
     const startString = startDate.toLocaleDateString('en-GB').replace(/\//g, '.');
     const endString = endDate.toLocaleDateString('en-GB').replace(/\//g, '.');
 
-    const response = await axios(`https://vnz.osvita.net/BetaSchedule.asmx/GetScheduleDataX`, {
+    const response = await axios(`https://vnz.osvita.net/WidgetSchedule.asmx/GetScheduleDataX`, {
         params: {
             callback: '',
             aVuzID: 11613,

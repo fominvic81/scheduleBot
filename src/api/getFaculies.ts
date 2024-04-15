@@ -4,7 +4,7 @@ import { KeyValue } from '.';
 
 export const getFaculies = async (): Promise<KeyValue[]> => {
 
-    const response = await axios(`https://vnz.osvita.net/BetaSchedule.asmx/GetEmployeeFaculties`, {
+    const response = await axios(`https://vnz.osvita.net/WidgetSchedule.asmx/GetEmployeeFaculties`, {
         params: {
             callback: '',
             aVuzID: 11613,

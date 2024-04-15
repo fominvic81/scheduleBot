@@ -10,7 +10,7 @@ export interface FiltersData {
 
 export const getFilters = async (): Promise<FiltersData> => {
     
-    const response = await axios(`https://vnz.osvita.net/BetaSchedule.asmx/GetStudentScheduleFiltersData`, {
+    const response = await axios(`https://vnz.osvita.net/WidgetSchedule.asmx/GetStudentScheduleFiltersData`, {
         params: {
             callback: '',
             aVuzID: 11613,

@@ -10,7 +10,7 @@ export interface EmployeesAndChairs {
 }
 export const getEmployeesAndChairs = async (facultyId: string): Promise<EmployeesAndChairs> => {
 
-    const response = await axios('https://vnz.osvita.net/BetaSchedule.asmx/GetEmployeeChairs', {
+    const response = await axios('https://vnz.osvita.net/WidgetSchedule.asmx/GetEmployeeChairs', {
         params: {
             callback: '',
             aVuzID: 11613,

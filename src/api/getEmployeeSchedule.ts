@@ -29,7 +29,7 @@ export interface EmployeeScheduleDay {
 
 export const getEmployeeSchedule = async (employeeId: string, startDate: string, endDate: string): Promise<EmployeeScheduleDay[]> => {
 
-    const response = await axios('https://vnz.osvita.net/BetaSchedule.asmx/GetScheduleDataEmp', {
+    const response = await axios('https://vnz.osvita.net/WidgetSchedule.asmx/GetScheduleDataEmp', {
         params: {
             callback: '',
             aVuzID: 11613,
