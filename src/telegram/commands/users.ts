@@ -8,14 +8,18 @@ command('users', (ctx) => {
     const users = User.findAll();
     users.sort((a, b) => a.messages - b.messages);
     for (const user of users) {
-        
-        message += `${user.id} \\| ${escapeMsg(user.username ?? '')}\n`;
-        message += `${escapeMsg((user.firstname + (user.lastname ?? '')))}\n`;
-        message += `${user.messages}\n`;
-        message += '\n';
+        let userStr = '';
+        userStr += `${user.id} \\| ${escapeMsg(user.username ?? '')}\n`;
+        userStr += `${escapeMsg((user.firstname + (user.lastname ?? '')))}\n`;
+        userStr += `${user.messages}\n`;
+        userStr += '\n';
+
+        if (message.length + userStr.length > 4000) {
+            ctx.sendMessage(message, { parse_mode: 'MarkdownV2' });
+            message = '';
+        }
+        message += userStr;
     }
-    message += '';
 
     ctx.sendMessage(message, { parse_mode: 'MarkdownV2' });
-
 });
