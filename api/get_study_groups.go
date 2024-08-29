@@ -13,10 +13,7 @@ type getStudyGroupsRespose struct {
 }
 
 func GetStudyGroups(faculty string, educationForm string, course string) ([]KeyValue, error) {
-	req, err := http.NewRequest("GET", "https://vnz.osvita.net/WidgetSchedule.asmx/GetStudyGroups", nil)
-	if err != nil {
-		return nil, err
-	}
+	req, _ := http.NewRequest("GET", "https://vnz.osvita.net/WidgetSchedule.asmx/GetStudyGroups", nil)
 
 	q := req.URL.Query()
 	q.Add("callback", "")

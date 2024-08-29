@@ -10,7 +10,7 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-func GetSchedule(c tele.Context, days int, offset int, startFromMonday bool) ([]api.ScheduleDay, error) {
+func GetSchedule(c tele.Context, withGroups bool, days int, offset int, startFromMonday bool) ([]api.Day, error) {
 	user, ok := c.Get("user").(*db.User)
 	if !ok {
 		return nil, errors.New("failed to get user in 'GetSchedule'")
@@ -38,21 +38,27 @@ func GetSchedule(c tele.Context, days int, offset int, startFromMonday bool) ([]
 	}
 
 	schedule, err := api.GetSchedule(*user.StudyGroup, start, end)
-
 	if err != nil {
 		return nil, err
+	}
+
+	if withGroups {
+		err = api.GetScheduleGroup(schedule, start, end)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return schedule, nil
 }
 
-func SendSchedule(c tele.Context, formatter func(day *api.ScheduleDay) string, days int, offset int, startFromMonday bool) error {
+func SendSchedule(c tele.Context, withGroups bool, formatter func(day *api.Day) string, days int, offset int, startFromMonday bool) error {
 	asked, err := Ask(c)
 	if err != nil || asked {
 		return err
 	}
 
-	schedule, err := GetSchedule(c, days, offset, startFromMonday)
+	schedule, err := GetSchedule(c, withGroups, days, offset, startFromMonday)
 	if err != nil {
 		return err
 	}

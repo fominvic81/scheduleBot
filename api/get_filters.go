@@ -17,10 +17,7 @@ type getFiltersReponse struct {
 }
 
 func GetFilters() (Filters, error) {
-	req, err := http.NewRequest("GET", "https://vnz.osvita.net/WidgetSchedule.asmx/GetStudentScheduleFiltersData", nil)
-	if err != nil {
-		return Filters{}, err
-	}
+	req, _ := http.NewRequest("GET", "https://vnz.osvita.net/WidgetSchedule.asmx/GetStudentScheduleFiltersData", nil)
 
 	q := req.URL.Query()
 	q.Add("callback", "")

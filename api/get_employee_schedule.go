@@ -7,20 +7,16 @@ import (
 	"time"
 )
 
-type scheduleReponse struct {
-	D []Class `json:"d"`
-}
-
-func GetSchedule(studyGroup string, startDate time.Time, endDate time.Time) ([]Day, error) {
+func GetEmployeeSchedule(employee KeyValue, startDate time.Time, endDate time.Time) ([]Day, error) {
 	start := startDate.Format("02.01.2006")
 	end := endDate.Format("02.01.2006")
 
-	req, _ := http.NewRequest("GET", "https://vnz.osvita.net/WidgetSchedule.asmx/GetScheduleDataX", nil)
+	req, _ := http.NewRequest("GET", "https://vnz.osvita.net/WidgetSchedule.asmx/GetScheduleDataEmp", nil)
 
 	q := req.URL.Query()
 	q.Add("callback", "")
 	q.Add("aVuzId", "11613")
-	q.Add("aStudyGroupID", "\""+studyGroup+"\"")
+	q.Add("aEmployeeID", "\""+employee.Key+"\"")
 	q.Add("aStudyTypeID", "null")
 	q.Add("aStartDate", "\""+start+"\"")
 	q.Add("aEndDate", "\""+end+"\"")
@@ -40,6 +36,10 @@ func GetSchedule(studyGroup string, startDate time.Time, endDate time.Time) ([]D
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return nil, err
+	}
+
+	for i := range len(result.D) {
+		result.D[i].Employee = employee.Value
 	}
 
 	return groupByDays(result.D), nil

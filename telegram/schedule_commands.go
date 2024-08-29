@@ -9,27 +9,27 @@ import (
 )
 
 func Day(c tele.Context) error {
-	return SendSchedule(c, FormatDay, 1, 0, false)
+	return SendSchedule(c, true, FormatDay, 1, 0, false)
 }
 
 func Next(c tele.Context) error {
-	return SendSchedule(c, FormatDay, 1, 1, false)
+	return SendSchedule(c, true, FormatDay, 1, 1, false)
 }
 
 func NextNext(c tele.Context) error {
-	return SendSchedule(c, FormatDay, 1, 2, false)
+	return SendSchedule(c, true, FormatDay, 1, 2, false)
 }
 
 func Week(c tele.Context) error {
-	return SendSchedule(c, FormatDay, 7, 0, true)
+	return SendSchedule(c, true, FormatDay, 7, 0, true)
 }
 
 func NextWeek(c tele.Context) error {
-	return SendSchedule(c, FormatDay, 7, 7, true)
+	return SendSchedule(c, true, FormatDay, 7, 7, true)
 }
 
 func Short(c tele.Context) error {
-	return SendSchedule(c, FormatDayShort, 21, 0, true)
+	return SendSchedule(c, true, FormatDayShort, 21, 0, true)
 }
 
 func Subject(c tele.Context) error {
@@ -38,7 +38,7 @@ func Subject(c tele.Context) error {
 		return err
 	}
 
-	schedule, err := GetSchedule(c, 21, 0, true)
+	schedule, err := GetSchedule(c, false, 21, 0, true)
 	if err != nil {
 		return err
 	}
@@ -70,11 +70,11 @@ func Subject(c tele.Context) error {
 }
 
 func SendSubject(c tele.Context, discipline string) error {
-	return SendSchedule(c, func(day *api.ScheduleDay) string {
-		day2 := api.ScheduleDay{
+	return SendSchedule(c, true, func(day *api.Day) string {
+		day2 := api.Day{
 			WeekDay: day.WeekDay,
 			Date:    day.Date,
-			Classes: make([]api.ScheduleClass, 0, len(day.Classes)),
+			Classes: make([]api.Class, 0, len(day.Classes)),
 		}
 		for _, class := range day.Classes {
 			if class.Discipline == discipline {
