@@ -53,7 +53,7 @@ func Subject(c tele.Context) error {
 	}
 
 	if len(schedule) == 0 {
-		return c.Send("Розклад не знайдено")
+		return c.Send("Розклад не знайдено", GetMarkup(c, nil))
 	}
 
 	disciplines := make([]string, 0, 6)
@@ -75,7 +75,7 @@ func Subject(c tele.Context) error {
 	}
 	markup.Inline(rows...)
 
-	return c.Send("Виберіть предмет", &markup)
+	return c.Send("Виберіть предмет", GetMarkup(c, &markup))
 }
 
 func SendSubject(c tele.Context, discipline string) error {

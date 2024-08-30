@@ -44,7 +44,7 @@ func CallbackData(c tele.Context) error {
 		case "group":
 			user.StudyGroup = &value
 
-			err := c.Send("Готово!")
+			err := c.Send("Готово!", GetMarkup(c, nil))
 			if err != nil {
 				return err
 			}
