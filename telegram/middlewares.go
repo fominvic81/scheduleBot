@@ -50,12 +50,12 @@ func KeyboardMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 
 		keyboardUsed := false
 		if user.KeyboardVersion != db.KeyboardVersion {
-			c.Set("keyboard", func() *tele.ReplyMarkup {
+			c.Set("keyboard", func() [][]tele.ReplyButton {
 				keyboardUsed = true
-				return GetKeyboardMarkup()
+				return GetReplyKeyboard()
 			})
 		} else {
-			c.Set("keyboard", func() *tele.ReplyMarkup {
+			c.Set("keyboard", func() [][]tele.ReplyButton {
 				return nil
 			})
 		}
@@ -71,4 +71,15 @@ func KeyboardMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 
 		return user.Save()
 	}
+}
+
+func GetMarkup(c tele.Context, markup *tele.ReplyMarkup) *tele.ReplyMarkup {
+	if markup == nil {
+		markup = &tele.ReplyMarkup{}
+	}
+	if markup.ReplyKeyboard == nil {
+		markup.ReplyKeyboard = c.Get("keyboard").(func() [][]tele.ReplyButton)()
+		markup.ResizeKeyboard = true
+	}
+	return markup
 }

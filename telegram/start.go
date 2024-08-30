@@ -5,7 +5,7 @@ import (
 )
 
 func Start(c tele.Context) error {
-	err := c.Send(HelpMsg(), c.Get("keyboard").(func() *tele.ReplyMarkup)())
+	err := c.Send(HelpMsg(), GetMarkup(c, nil))
 
 	if err != nil {
 		return err

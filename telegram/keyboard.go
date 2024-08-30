@@ -27,7 +27,7 @@ func GetKeyboard() Keyboard {
 	}
 }
 
-func GetKeyboardMarkup() *tele.ReplyMarkup {
+func GetReplyKeyboard() [][]tele.ReplyButton {
 	keyboard := GetKeyboard()
 	replyKeyboard := make([][]tele.ReplyButton, len(keyboard))
 
@@ -40,8 +40,5 @@ func GetKeyboardMarkup() *tele.ReplyMarkup {
 		}
 	}
 
-	return &tele.ReplyMarkup{
-		ReplyKeyboard:  replyKeyboard,
-		ResizeKeyboard: true,
-	}
+	return replyKeyboard
 }

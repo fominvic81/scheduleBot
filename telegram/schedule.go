@@ -64,11 +64,11 @@ func SendSchedule(c tele.Context, withGroups bool, formatter func(day *api.Day) 
 	}
 
 	if len(schedule) == 0 {
-		return c.Send("Розклад не знайдено", c.Get("keyboard").(func() *tele.ReplyMarkup)())
+		return c.Send("Розклад не знайдено", GetMarkup(c, nil))
 	}
 
 	for _, day := range schedule {
-		err = c.Send(formatter(&day), tele.ModeMarkdownV2, c.Get("keyboard").(func() *tele.ReplyMarkup)())
+		err = c.Send(formatter(&day), tele.ModeMarkdownV2, GetMarkup(c, nil))
 
 		if err != nil {
 			return err
