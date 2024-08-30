@@ -1,6 +1,8 @@
 package telegram
 
 import (
+	"fmt"
+	"hash/fnv"
 	"slices"
 
 	"github.com/fominvic81/scheduleBot/api"
@@ -30,6 +32,13 @@ func NextWeek(c tele.Context) error {
 
 func Short(c tele.Context) error {
 	return SendSchedule(c, true, FormatDayShort, 21, 0, true)
+}
+
+func hash(str string) string {
+	hasher := fnv.New64a()
+	hasher.Write([]byte(str))
+
+	return fmt.Sprintf("%x", hasher.Sum64())
 }
 
 func Subject(c tele.Context) error {
@@ -62,7 +71,7 @@ func Subject(c tele.Context) error {
 	markup := tele.ReplyMarkup{}
 	rows := make([]tele.Row, 0, 6)
 	for _, discipline := range disciplines {
-		rows = append(rows, markup.Row(markup.Data(discipline, "discipline:"+discipline)))
+		rows = append(rows, markup.Row(markup.Data(discipline, "discipline:"+hash(discipline))))
 	}
 	markup.Inline(rows...)
 
@@ -77,7 +86,7 @@ func SendSubject(c tele.Context, discipline string) error {
 			Classes: make([]api.Class, 0, len(day.Classes)),
 		}
 		for _, class := range day.Classes {
-			if class.Discipline == discipline {
+			if hash(class.Discipline) == discipline {
 				day2.Classes = append(day2.Classes, class)
 			}
 		}
