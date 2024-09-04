@@ -6,8 +6,6 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var KeyboardVersion int64 = 4
-
 func Init() (*sql.DB, error) {
 	db, err := sql.Open("sqlite3", "./db.sqlite")
 	if err != nil {

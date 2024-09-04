@@ -52,6 +52,25 @@ func GetSchedule(c tele.Context, withGroups bool, days int, offset int, startFro
 	return schedule, nil
 }
 
+func GetDayMarkup(date string) *tele.ReplyMarkup {
+	time, err := time.Parse("02.01.2006", date)
+
+	if err != nil {
+		// TODO: log error
+		return &tele.ReplyMarkup{}
+	}
+
+	return &tele.ReplyMarkup{
+		InlineKeyboard: [][]tele.InlineButton{
+			{
+				{Text: "Попередній день", Data: "update:" + time.AddDate(0, 0, -1).Format("02.01.2006")},
+				{Text: "Наступний день", Data: "update:" + time.AddDate(0, 0, 1).Format("02.01.2006")},
+			},
+			{{Text: "Оновити", Data: "update:" + date}},
+		},
+	}
+}
+
 func SendSchedule(c tele.Context, withGroups bool, formatter func(day *api.Day) string, days int, offset int, startFromMonday bool) error {
 	asked, err := Ask(c)
 	if err != nil || asked {
@@ -68,7 +87,11 @@ func SendSchedule(c tele.Context, withGroups bool, formatter func(day *api.Day) 
 	}
 
 	for _, day := range schedule {
-		err = c.Send(formatter(&day), tele.ModeMarkdownV2, GetMarkup(c, nil))
+		if days > 1 {
+			err = c.Send(formatter(&day), tele.ModeMarkdownV2, GetMarkup(c, nil))
+		} else {
+			err = c.Send(formatter(&day), tele.ModeMarkdownV2, GetMarkup(c, GetDayMarkup(day.Date)))
+		}
 
 		if err != nil {
 			return err

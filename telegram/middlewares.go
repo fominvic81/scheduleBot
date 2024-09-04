@@ -3,6 +3,7 @@ package telegram
 import (
 	"database/sql"
 
+	"github.com/fominvic81/scheduleBot/consts"
 	"github.com/fominvic81/scheduleBot/db"
 
 	tele "gopkg.in/telebot.v3"
@@ -49,7 +50,7 @@ func KeyboardMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 		}
 
 		keyboardUsed := false
-		if user.KeyboardVersion != db.KeyboardVersion {
+		if user.KeyboardVersion != consts.KeyboardVersion {
 			c.Set("keyboard", func() [][]tele.ReplyButton {
 				keyboardUsed = true
 				return GetReplyKeyboard()
@@ -66,7 +67,7 @@ func KeyboardMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 		}
 
 		if keyboardUsed {
-			user.KeyboardVersion = db.KeyboardVersion
+			user.KeyboardVersion = consts.KeyboardVersion
 		}
 
 		return user.Save()
