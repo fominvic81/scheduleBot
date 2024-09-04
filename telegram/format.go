@@ -3,6 +3,7 @@ package telegram
 import (
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/fominvic81/scheduleBot/api"
 )
@@ -23,7 +24,17 @@ func FormatDay(day *api.Day) string {
 		message += fmt.Sprintf("Тип: \\[*%s*\\] Кабінет: \\[*%s*\\]\n", Escape(class.Type), Escape(class.Cabinet))
 
 		if class.Groups != "" {
-			message += fmt.Sprintf("Групи: %s\n", Escape(class.Groups))
+			groups := class.Groups
+			if len(groups) > 90 {
+				count := strings.Count(groups, ",")
+				groups = groups[:90]
+				count -= strings.Count(groups, ",")
+
+				groups = fmt.Sprintf("%s... (І ще %v)", groups[:strings.LastIndex(groups, ",")], count)
+			}
+			message += fmt.Sprintf("Групи: %s\n", Escape(groups))
+		} else {
+			message += Escape("Групи: Пошук...\n")
 		}
 		message += "\n"
 	}

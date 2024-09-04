@@ -84,7 +84,6 @@ func CallbackData(c tele.Context) error {
 				msgLastModMu.Unlock()
 
 				GetScheduleGroups(c, days, date, date)
-				time.Sleep(time.Second * 5)
 
 				msgLastModMu.Lock()
 				current := msgLastMod[key]
