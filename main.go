@@ -14,12 +14,6 @@ import (
 func main() {
 	godotenv.Load()
 
-	file, ferr := os.OpenFile("logs.txt", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
-	if ferr != nil {
-		log.Fatal(ferr)
-	}
-	log.SetOutput(file)
-
 	database, err := db.Init()
 
 	if err != nil {
@@ -27,5 +21,16 @@ func main() {
 		return
 	}
 
-	telegram.Init(os.Getenv("TOKEN"), database)
+	token := os.Getenv("TOKEN")
+	if token == "" {
+		log.Fatal("Failed to get TOKEN env variable")
+	}
+
+	file, ferr := os.Open("logs.txt")
+	if ferr != nil {
+		log.Fatal(ferr)
+	}
+	log.SetOutput(file)
+
+	telegram.Init(token, database)
 }

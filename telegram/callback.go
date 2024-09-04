@@ -62,12 +62,12 @@ func CallbackData(c tele.Context) error {
 				return err
 			}
 
-			err = api.GetScheduleGroup(days, date, date)
+			err = api.GetScheduleGroups(days, date, date)
 			if err != nil {
-				return err
+				LogError(err, c)
 			}
 
-			markup := GetDayMarkup(date.Format("02.01.2006"))
+			markup := GetDayMarkup(c, date.Format("02.01.2006"))
 			if len(days) == 0 {
 				err = c.Edit(consts.WeekDays[int(date.Weekday())]+", "+date.Format("02.01.2006")+"\n\nРозкладу немає", markup)
 			} else {

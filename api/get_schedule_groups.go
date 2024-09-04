@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func GetScheduleGroup(schedule []Day, startDate time.Time, endDate time.Time) error {
+func GetScheduleGroups(schedule []Day, startDate time.Time, endDate time.Time) error {
 	employees := make([]KeyValue, 0, 6)
 
 	for _, day := range schedule {

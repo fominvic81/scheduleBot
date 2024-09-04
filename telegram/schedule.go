@@ -43,20 +43,20 @@ func GetSchedule(c tele.Context, withGroups bool, days int, offset int, startFro
 	}
 
 	if withGroups {
-		err = api.GetScheduleGroup(schedule, start, end)
+		err = api.GetScheduleGroups(schedule, start, end)
 		if err != nil {
-			return nil, err
+			LogError(err, c)
 		}
 	}
 
 	return schedule, nil
 }
 
-func GetDayMarkup(date string) *tele.ReplyMarkup {
+func GetDayMarkup(c tele.Context, date string) *tele.ReplyMarkup {
 	time, err := time.Parse("02.01.2006", date)
 
 	if err != nil {
-		// TODO: log error
+		LogError(err, c)
 		return &tele.ReplyMarkup{}
 	}
 
@@ -90,7 +90,7 @@ func SendSchedule(c tele.Context, withGroups bool, formatter func(day *api.Day) 
 		if days > 1 {
 			err = c.Send(formatter(&day), tele.ModeMarkdownV2, GetMarkup(c, nil))
 		} else {
-			err = c.Send(formatter(&day), tele.ModeMarkdownV2, GetMarkup(c, GetDayMarkup(day.Date)))
+			err = c.Send(formatter(&day), tele.ModeMarkdownV2, GetMarkup(c, GetDayMarkup(c, day.Date)))
 		}
 
 		if err != nil {
