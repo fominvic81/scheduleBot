@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"sync"
 	"time"
 
 	"github.com/fominvic81/scheduleBot/api"
@@ -12,6 +13,9 @@ import (
 
 	tele "gopkg.in/telebot.v3"
 )
+
+var msgLastModMu = sync.Mutex{}
+var msgLastMod = map[string]int{}
 
 func CallbackData(c tele.Context) error {
 	user, ok := c.Get("user").(*db.User)
@@ -62,17 +66,38 @@ func CallbackData(c tele.Context) error {
 				return err
 			}
 
-			err = api.GetScheduleGroups(days, date, date)
-			if err != nil {
-				LogError(err, c)
-			}
-
 			markup := GetDayMarkup(c, date.Format("02.01.2006"))
 			if len(days) == 0 {
 				err = c.Edit(consts.WeekDays[int(date.Weekday())]+", "+date.Format("02.01.2006")+"\n\nРозкладу немає", markup)
 			} else {
 				text := FormatDay(&days[0]) + fmt.Sprintf("Оновлено %s", time.Now().Format("15:04:05"))
 				err = c.Edit(text, tele.ModeMarkdownV2, markup)
+
+				if err != nil && err != tele.ErrSameMessageContent {
+					return err
+				}
+				key := fmt.Sprintf("%v|%v", c.Chat().ID, c.Message().ID)
+
+				msgLastModMu.Lock()
+				count := msgLastMod[key] + 1
+				msgLastMod[key] = count
+				msgLastModMu.Unlock()
+
+				GetScheduleGroups(c, days, date, date)
+				time.Sleep(time.Second * 5)
+
+				msgLastModMu.Lock()
+				current := msgLastMod[key]
+				msgLastModMu.Unlock()
+
+				if current == count {
+					if err != nil {
+						LogError(err, c)
+					} else {
+						text = FormatDay(&days[0]) + fmt.Sprintf("Оновлено %s", time.Now().Format("15:04:05"))
+						err = c.Edit(text, tele.ModeMarkdownV2, markup)
+					}
+				}
 			}
 
 			if err == tele.ErrSameMessageContent {

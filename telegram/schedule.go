@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/fominvic81/scheduleBot/api"
@@ -10,16 +11,7 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-func GetSchedule(c tele.Context, withGroups bool, days int, offset int, startFromMonday bool) ([]api.Day, error) {
-	user, ok := c.Get("user").(*db.User)
-	if !ok {
-		return nil, errors.New("failed to get user in 'GetSchedule'")
-	}
-
-	if user.StudyGroup == nil {
-		return nil, errors.New("failed to get schedule, used does not have selected study group")
-	}
-
+func GetDateRange(days int, offset int, startFromMonday bool) (time.Time, time.Time) {
 	now := time.Now()
 
 	startOffset := 0
@@ -37,19 +29,32 @@ func GetSchedule(c tele.Context, withGroups bool, days int, offset int, startFro
 		}
 	}
 
+	return start, end
+}
+
+func GetSchedule(c tele.Context, start time.Time, end time.Time) ([]api.Day, error) {
+	user, ok := c.Get("user").(*db.User)
+	if !ok {
+		return nil, errors.New("failed to get user in 'GetSchedule'")
+	}
+
+	if user.StudyGroup == nil {
+		return nil, errors.New("failed to get schedule, used does not have selected study group")
+	}
+
 	schedule, err := api.GetSchedule(*user.StudyGroup, start, end)
 	if err != nil {
 		return nil, err
 	}
 
-	if withGroups {
-		err = api.GetScheduleGroups(schedule, start, end)
-		if err != nil {
-			LogError(err, c)
-		}
-	}
-
 	return schedule, nil
+}
+
+func GetScheduleGroups(c tele.Context, schedule []api.Day, start time.Time, end time.Time) {
+	err := api.GetScheduleGroups(schedule, start, end)
+	if err != nil {
+		LogError(err, c)
+	}
 }
 
 func GetDayMarkup(c tele.Context, date string) *tele.ReplyMarkup {
@@ -77,7 +82,8 @@ func SendSchedule(c tele.Context, withGroups bool, formatter func(day *api.Day) 
 		return err
 	}
 
-	schedule, err := GetSchedule(c, withGroups, days, offset, startFromMonday)
+	start, end := GetDateRange(days, offset, startFromMonday)
+	schedule, err := GetSchedule(c, start, end)
 	if err != nil {
 		return err
 	}
@@ -86,15 +92,39 @@ func SendSchedule(c tele.Context, withGroups bool, formatter func(day *api.Day) 
 		return c.Send("Розклад не знайдено", GetMarkup(c, nil))
 	}
 
-	for _, day := range schedule {
+	for i, day := range schedule {
 		if days > 1 {
-			err = c.Send(formatter(&day), tele.ModeMarkdownV2, GetMarkup(c, nil))
+			msg, err := c.Bot().Send(c.Recipient(), formatter(&day), tele.ModeMarkdownV2, GetMarkup(c, nil))
+			if err != nil {
+				return err
+			}
+			schedule[i].MessageId = msg.ID
 		} else {
-			err = c.Send(formatter(&day), tele.ModeMarkdownV2, GetMarkup(c, GetDayMarkup(c, day.Date)))
+			msg, err := c.Bot().Send(c.Recipient(), formatter(&day), tele.ModeMarkdownV2, GetMarkup(c, GetDayMarkup(c, day.Date)))
+			if err != nil {
+				return err
+			}
+			schedule[i].MessageId = msg.ID
 		}
+	}
 
-		if err != nil {
-			return err
+	GetScheduleGroups(c, schedule, start, end)
+
+	for _, day := range schedule {
+		msg := tele.StoredMessage{
+			ChatID:    c.Chat().ID,
+			MessageID: fmt.Sprintf("%v", day.MessageId),
+		}
+		if days > 1 {
+			_, err := c.Bot().Edit(msg, formatter(&day), tele.ModeMarkdownV2, GetMarkup(c, nil))
+			if err != nil {
+				return err
+			}
+		} else {
+			_, err := c.Bot().Edit(msg, formatter(&day), tele.ModeMarkdownV2, GetMarkup(c, GetDayMarkup(c, day.Date)))
+			if err != nil {
+				return err
+			}
 		}
 	}
 

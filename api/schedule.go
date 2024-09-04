@@ -20,9 +20,10 @@ type Class struct {
 }
 
 type Day struct {
-	WeekDay string
-	Date    string
-	Classes []Class
+	MessageId int
+	WeekDay   string
+	Date      string
+	Classes   []Class
 }
 
 func groupByDays(classes []Class) []Day {
@@ -32,7 +33,9 @@ func groupByDays(classes []Class) []Day {
 	for _, class := range classes {
 		dateTime := class.FullDate + "|" + class.Begin
 		classByDateTime[dateTime] = class
-		groupsByDateTime[dateTime] = append(groupsByDateTime[dateTime], class.Groups)
+		if class.Groups != "" {
+			groupsByDateTime[dateTime] = append(groupsByDateTime[dateTime], class.Groups)
+		}
 	}
 
 	for _, groups := range groupsByDateTime {

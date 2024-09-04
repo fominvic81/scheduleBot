@@ -47,7 +47,8 @@ func Subject(c tele.Context) error {
 		return err
 	}
 
-	schedule, err := GetSchedule(c, false, 21, 0, true)
+	start, end := GetDateRange(21, 0, true)
+	schedule, err := GetSchedule(c, start, end)
 	if err != nil {
 		return err
 	}
