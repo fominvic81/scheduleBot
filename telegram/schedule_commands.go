@@ -31,7 +31,7 @@ func NextWeek(c tele.Context) error {
 }
 
 func Short(c tele.Context) error {
-	return SendSchedule(c, true, FormatDayShort, 21, 0, true)
+	return SendSchedule(c, false, FormatDayShort, 21, 0, true)
 }
 
 func hash(str string) string {

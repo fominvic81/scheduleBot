@@ -108,22 +108,24 @@ func SendSchedule(c tele.Context, withGroups bool, formatter func(day *api.Day) 
 		}
 	}
 
-	GetScheduleGroups(c, schedule, start, end)
+	if withGroups {
+		GetScheduleGroups(c, schedule, start, end)
 
-	for _, day := range schedule {
-		msg := tele.StoredMessage{
-			ChatID:    c.Chat().ID,
-			MessageID: fmt.Sprintf("%v", day.MessageId),
-		}
-		if days > 1 {
-			_, err := c.Bot().Edit(msg, formatter(&day), tele.ModeMarkdownV2, GetMarkup(c, nil))
-			if err != nil {
-				return err
+		for _, day := range schedule {
+			msg := tele.StoredMessage{
+				ChatID:    c.Chat().ID,
+				MessageID: fmt.Sprintf("%v", day.MessageId),
 			}
-		} else {
-			_, err := c.Bot().Edit(msg, formatter(&day), tele.ModeMarkdownV2, GetMarkup(c, GetDayMarkup(c, day.Date)))
-			if err != nil {
-				return err
+			if days > 1 {
+				_, err := c.Bot().Edit(msg, formatter(&day), tele.ModeMarkdownV2, GetMarkup(c, nil))
+				if err != nil {
+					return err
+				}
+			} else {
+				_, err := c.Bot().Edit(msg, formatter(&day), tele.ModeMarkdownV2, GetMarkup(c, GetDayMarkup(c, day.Date)))
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}

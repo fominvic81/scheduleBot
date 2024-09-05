@@ -17,6 +17,7 @@ type Class struct {
 	FullDate   string `json:"full_date"`
 	Employee   string `json:"employee"`
 	Groups     string `json:"study_group"`
+	Subgroup   string `json:"study_subgroup"`
 }
 
 type Day struct {
@@ -31,7 +32,7 @@ func groupByDays(classes []Class) []Day {
 	groupsByDateTime := make(map[string][]string)
 
 	for _, class := range classes {
-		dateTime := class.FullDate + "|" + class.Begin
+		dateTime := class.FullDate + "|" + class.Begin + "|" + class.Subgroup
 		classByDateTime[dateTime] = class
 		if class.Groups != "" {
 			groupsByDateTime[dateTime] = append(groupsByDateTime[dateTime], class.Groups)
