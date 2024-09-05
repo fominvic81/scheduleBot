@@ -119,12 +119,12 @@ func SendSchedule(c tele.Context, withGroups bool, formatter func(day *api.Day) 
 			}
 			if days > 1 {
 				_, err := c.Bot().Edit(msg, formatter(&day), tele.ModeMarkdownV2, GetMarkup(c, nil))
-				if err != nil {
+				if err != nil && err != tele.ErrSameMessageContent {
 					return err
 				}
 			} else {
 				_, err := c.Bot().Edit(msg, formatter(&day), tele.ModeMarkdownV2, GetMarkup(c, GetDayMarkup(c, day.Date)))
-				if err != nil {
+				if err != nil && err != tele.ErrSameMessageContent {
 					return err
 				}
 			}

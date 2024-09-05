@@ -26,7 +26,7 @@ func main() {
 		log.Fatal("Failed to get TOKEN env variable")
 	}
 
-	file, ferr := os.Open("logs.txt")
+	file, ferr := os.OpenFile("logs.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 	if ferr != nil {
 		log.Fatal(ferr)
 	}

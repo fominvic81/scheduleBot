@@ -41,6 +41,7 @@ func Init(token string, database *sql.DB) {
 			return next(c)
 		}
 	})
+	b.Use(LogMiddleware)
 	b.Use(UserMiddleware)
 	b.Use(KeyboardMiddleware)
 

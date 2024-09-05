@@ -42,6 +42,13 @@ func UserMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 	}
 }
 
+func LogMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
+	return func(c tele.Context) error {
+		LogAction(c)
+		return next(c)
+	}
+}
+
 func KeyboardMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 	return func(c tele.Context) error {
 		user, ok := c.Get("user").(*db.User)
