@@ -23,10 +23,10 @@ func CallbackData(c tele.Context) error {
 		return errors.New("failed to get user in CallbackData")
 	}
 
-	r, _ := regexp.Compile("([a-z]+):(.*)")
+	r, _ := regexp.Compile("([a-z]+):([^;]*);?.*")
 	matches := r.FindStringSubmatch(c.Data())
 
-	if len(matches) == 3 {
+	if len(matches) >= 3 {
 		key := matches[1]
 		value := matches[2]
 

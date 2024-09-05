@@ -58,7 +58,7 @@ func GetScheduleGroups(c tele.Context, schedule []api.Day, start time.Time, end 
 }
 
 func GetDayMarkup(c tele.Context, date string) *tele.ReplyMarkup {
-	time, err := time.Parse("02.01.2006", date)
+	current, err := time.Parse("02.01.2006", date)
 
 	if err != nil {
 		LogError(err, c)
@@ -68,8 +68,9 @@ func GetDayMarkup(c tele.Context, date string) *tele.ReplyMarkup {
 	return &tele.ReplyMarkup{
 		InlineKeyboard: [][]tele.InlineButton{
 			{
-				{Text: "Попередній день", Data: "update:" + time.AddDate(0, 0, -1).Format("02.01.2006")},
-				{Text: "Наступний день", Data: "update:" + time.AddDate(0, 0, 1).Format("02.01.2006")},
+				{Text: "⏪", Data: "update:" + current.AddDate(0, 0, -1).Format("02.01.2006") + ";prev"},
+				{Text: "Сьогодні", Data: "update:" + time.Now().Format("02.01.2006") + ";today"},
+				{Text: "⏩", Data: "update:" + current.AddDate(0, 0, 1).Format("02.01.2006") + ";next"},
 			},
 			{{Text: "Оновити", Data: "update:" + date}},
 		},
