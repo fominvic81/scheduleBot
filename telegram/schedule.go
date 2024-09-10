@@ -34,10 +34,7 @@ func GetDateRange(days int, offset int, startFromMonday bool) (time.Time, time.T
 }
 
 func GetSchedule(c tele.Context, start time.Time, end time.Time, filter bool) ([]api.Day, error) {
-	user, ok := c.Get("user").(*db.User)
-	if !ok {
-		return nil, errors.New("failed to get user in 'GetSchedule'")
-	}
+	user := c.Get("user").(*db.User)
 
 	if user.StudyGroup == nil {
 		return nil, errors.New("failed to get schedule, used does not have selected study group")

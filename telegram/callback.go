@@ -1,7 +1,6 @@
 package telegram
 
 import (
-	"errors"
 	"fmt"
 	"regexp"
 	"slices"
@@ -27,10 +26,7 @@ func boolToInt(a bool) int {
 }
 
 func CallbackData(c tele.Context) error {
-	user, ok := c.Get("user").(*db.User)
-	if !ok {
-		return errors.New("failed to get user in CallbackData")
-	}
+	user := c.Get("user").(*db.User)
 
 	r, _ := regexp.Compile("([a-z/]+)(?::([^;]+);?(.*))?")
 	matches := r.FindStringSubmatch(c.Data())

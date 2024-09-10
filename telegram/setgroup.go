@@ -1,18 +1,13 @@
 package telegram
 
 import (
-	"errors"
-
 	"github.com/fominvic81/scheduleBot/db"
 
 	tele "gopkg.in/telebot.v3"
 )
 
 func SetGroup(c tele.Context) error {
-	user, ok := c.Get("user").(*db.User)
-	if !ok {
-		return errors.New("failed to get user in 'SetGroup'")
-	}
+	user := c.Get("user").(*db.User)
 
 	user.StudyGroup = nil
 

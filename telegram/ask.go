@@ -1,8 +1,6 @@
 package telegram
 
 import (
-	"errors"
-
 	"github.com/fominvic81/scheduleBot/api"
 	"github.com/fominvic81/scheduleBot/db"
 
@@ -21,10 +19,7 @@ func GroupInRows(buttons []tele.Btn, perRow int) tele.ReplyMarkup {
 }
 
 func Ask(c tele.Context) (bool, error) {
-	user, ok := c.Get("user").(*db.User)
-	if !ok {
-		return false, errors.New("failed to get user in 'Ask'")
-	}
+	user := c.Get("user").(*db.User)
 
 	if user.Faculty == nil || user.EducationForm == nil || user.Course == nil {
 		filters, err := api.GetFilters()

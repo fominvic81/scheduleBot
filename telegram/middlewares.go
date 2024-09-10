@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"database/sql"
+	"errors"
 
 	"github.com/fominvic81/scheduleBot/consts"
 	"github.com/fominvic81/scheduleBot/db"
@@ -21,23 +22,24 @@ func UserMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 		database := c.Get("database").(*sql.DB)
 
 		sender := c.Sender()
-		if sender != nil {
-			user, err := db.GetOrCreateUser(database, sender.ID, sender.FirstName)
-			if err != nil {
-				return err
-			}
-			user.Firstname = sender.FirstName
-			user.Lastname = EmptyStrAsNil(sender.LastName)
-			user.Username = EmptyStrAsNil(sender.Username)
-			user.Messages += 1
-			err = user.Save()
-
-			if err != nil {
-				return err
-			}
-
-			c.Set("user", user)
+		if sender == nil {
+			return errors.New("failed to identify user")
 		}
+		user, err := db.GetOrCreateUser(database, sender.ID, sender.FirstName)
+		if err != nil {
+			return err
+		}
+		user.Firstname = sender.FirstName
+		user.Lastname = EmptyStrAsNil(sender.LastName)
+		user.Username = EmptyStrAsNil(sender.Username)
+		user.Messages += 1
+		err = user.Save()
+
+		if err != nil {
+			return err
+		}
+
+		c.Set("user", user)
 		return next(c)
 	}
 }
@@ -51,10 +53,7 @@ func LogMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 
 func KeyboardMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 	return func(c tele.Context) error {
-		user, ok := c.Get("user").(*db.User)
-		if !ok {
-			return next(c)
-		}
+		user := c.Get("user").(*db.User)
 
 		keyboardUsed := false
 		if user.KeyboardVersion != consts.KeyboardVersion {
