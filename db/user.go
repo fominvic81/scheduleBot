@@ -17,6 +17,7 @@ type User struct {
 	StudyGroup      *string
 	IsAdmin         bool
 	KeyboardVersion int64
+	Settings        *UserSettings
 }
 
 func (user *User) scan(scanner interface{ Scan(src ...any) error }) error {
@@ -51,6 +52,14 @@ func GetOrCreateUser(db *sql.DB, id int64, firstname string) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	settings, err := GetOrCreateUserSettings(db, id)
+	if err != nil {
+		return nil, err
+	}
+
+	user.Settings = settings
+
 	return &user, nil
 }
 
@@ -80,6 +89,12 @@ func (user *User) Save() error {
 		user.Id,
 	)
 	err := user.scan(row)
+	if err != nil {
+		return err
+	}
+
+	err = user.Settings.Save()
+
 	return err
 }
 

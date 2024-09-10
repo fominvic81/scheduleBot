@@ -28,6 +28,8 @@ func GetCommands() []Command {
 
 		{Text: "setgroup", Description: "Змінити групу", Handler: SetGroup},
 		{Text: "setdata", Description: "Змінити дані", Handler: SetData},
+
+		{Text: "settings", Description: "Налаштування", Handler: Settings},
 	}
 }
 

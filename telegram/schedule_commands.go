@@ -48,7 +48,7 @@ func Subject(c tele.Context) error {
 	}
 
 	start, end := GetDateRange(21, 0, true)
-	schedule, err := GetSchedule(c, start, end)
+	schedule, err := GetSchedule(c, start, end, true)
 	if err != nil {
 		return err
 	}
@@ -80,7 +80,7 @@ func Subject(c tele.Context) error {
 }
 
 func SendSubject(c tele.Context, discipline string) error {
-	return SendSchedule(c, true, func(day *api.Day) string {
+	return SendSchedule(c, true, func(c tele.Context, day *api.Day) string {
 		day2 := api.Day{
 			WeekDay: day.WeekDay,
 			Date:    day.Date,
@@ -91,6 +91,6 @@ func SendSubject(c tele.Context, discipline string) error {
 				day2.Classes = append(day2.Classes, class)
 			}
 		}
-		return FormatDay(&day2)
+		return FormatDay(c, &day2)
 	}, 21, 0, true)
 }
