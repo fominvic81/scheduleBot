@@ -63,6 +63,13 @@ func Ask(c tele.Context) (bool, error) {
 		}
 
 		if len(studyGroups) == 0 {
+			user.Faculty = nil
+			user.EducationForm = nil
+			user.Course = nil
+			err = user.Save()
+			if err != nil {
+				return false, err
+			}
 			return false, c.Send("Не знайдено навчальних груп з такими даними", GetMarkup(c, nil))
 		}
 
