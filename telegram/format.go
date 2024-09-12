@@ -11,7 +11,7 @@ import (
 )
 
 func Escape(msg string) string {
-	r, _ := regexp.Compile(`([\.\-\_\*\(\)\!])`)
+	r, _ := regexp.Compile("([\\.\\-\\_\\*\\(\\)\\!\\`])")
 
 	return r.ReplaceAllString(msg, "\\$1")
 }
