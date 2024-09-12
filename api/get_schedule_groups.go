@@ -12,6 +12,9 @@ func GetScheduleGroups(schedule []Day, startDate time.Time, endDate time.Time) e
 
 	for _, day := range schedule {
 		for _, class := range day.Classes {
+			if len(class.Employee) == 0 {
+				continue
+			}
 			employee, err := GetEmployeeByName(class.Employee)
 			if err != nil {
 				return err
@@ -51,8 +54,12 @@ func GetScheduleGroups(schedule []Day, startDate time.Time, endDate time.Time) e
 
 	for i := range schedule {
 		for j := range schedule[i].Classes {
-			class := schedule[i].Classes[j]
+			class := &schedule[i].Classes[j]
 			employee := class.Employee
+			if len(employee) == 0 {
+				class.Groups = "Не знайдено"
+				continue
+			}
 			employeeSchedule, ok := scheduleByEmployee[employee]
 			if !ok {
 				return errors.New("failed to get schedule by employee name: " + employee)
@@ -60,7 +67,7 @@ func GetScheduleGroups(schedule []Day, startDate time.Time, endDate time.Time) e
 			for _, day := range employeeSchedule {
 				for _, employeeClass := range day.Classes {
 					if employeeClass.FullDate == class.FullDate && employeeClass.Begin == class.Begin {
-						schedule[i].Classes[j].Groups = employeeClass.Groups
+						class.Groups = employeeClass.Groups
 					}
 				}
 			}
