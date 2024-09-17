@@ -12,7 +12,10 @@ import (
 )
 
 func main() {
-	godotenv.Load()
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Failed to load .env file")
+	}
 
 	database, err := db.Init()
 
@@ -26,9 +29,9 @@ func main() {
 		log.Fatal("Failed to get TOKEN env variable")
 	}
 
-	file, ferr := os.OpenFile("logs.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
-	if ferr != nil {
-		log.Fatal(ferr)
+	file, err := os.OpenFile("logs.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	if err != nil {
+		log.Fatal(err)
 	}
 	log.SetOutput(file)
 

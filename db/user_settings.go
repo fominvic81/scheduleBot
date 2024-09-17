@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 )
 
 type UserSettings struct {
@@ -34,7 +35,7 @@ func GetOrCreateUserSettings(db *sql.DB, id int64) (*UserSettings, error) {
 
 	err := settings.scan(row)
 
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		row = settings.db.QueryRow("INSERT INTO user_settings (user_id) VALUES (?) RETURNING *", id)
 		err = settings.scan(row)
 	}

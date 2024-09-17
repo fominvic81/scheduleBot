@@ -8,6 +8,7 @@ import (
 
 func Init() (*sql.DB, error) {
 	db, err := sql.Open("sqlite3", "./db.sqlite")
+	db.SetMaxOpenConns(1)
 	if err != nil {
 		return nil, err
 	}

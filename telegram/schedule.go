@@ -3,7 +3,9 @@ package telegram
 import (
 	"errors"
 	"fmt"
+	"github.com/fominvic81/scheduleBot/consts"
 	"slices"
+	"sync"
 	"time"
 
 	"github.com/fominvic81/scheduleBot/api"
@@ -45,16 +47,18 @@ func GetSchedule(c tele.Context, start time.Time, end time.Time, filter bool) ([
 		return nil, err
 	}
 
-	schedule := []api.Day{}
+	var schedule []api.Day
 	for _, day := range unfilteredSchedule {
-		classes := []api.Class{}
+		var classes []api.Class
 		for _, class := range day.Classes {
 			if !filter || !slices.Contains(user.Settings.HiddenSubjects, class.Discipline) {
 				classes = append(classes, class)
 			}
 		}
 		day.Classes = classes
-		schedule = append(schedule, day)
+		if len(classes) > 0 {
+			schedule = append(schedule, day)
+		}
 	}
 
 	return schedule, nil
@@ -87,54 +91,89 @@ func GetDayMarkup(c tele.Context, date string) *tele.ReplyMarkup {
 	}
 }
 
-func SendSchedule(c tele.Context, withGroups bool, formatter func(c tele.Context, day *api.Day) string, days int, offset int, startFromMonday bool) error {
+var msgLastModMu = sync.Mutex{}
+var msgLastMod = map[string]int{}
+
+func SendSchedule(c tele.Context, message *tele.Message, withGroups bool, formatter func(c tele.Context, day *api.Day) string, start time.Time, end time.Time) error {
 	asked, err := Ask(c)
 	if err != nil || asked {
 		return err
 	}
 
-	start, end := GetDateRange(days, offset, startFromMonday)
 	schedule, err := GetSchedule(c, start, end, true)
 	if err != nil {
 		return err
 	}
 
 	if len(schedule) == 0 {
-		return c.Send("Розклад не знайдено", GetMarkup(c, nil))
-	}
+		var markup *tele.ReplyMarkup
+		if start.Day() == end.Day() {
+			markup = GetDayMarkup(c, start.Format("02.01.2006"))
+		}
+		text := consts.WeekDays[start.Weekday()] + ", " + start.Format("02.01.2006")
+		if start.Day() != end.Day() {
+			text += " - " + consts.WeekDays[end.Weekday()] + ", " + end.Format("02.01.2006")
+		}
 
-	for i, day := range schedule {
-		if days > 1 {
-			msg, err := c.Bot().Send(c.Recipient(), formatter(c, &day), tele.ModeMarkdownV2, GetMarkup(c, nil))
-			if err != nil {
-				return err
+		text += "\n\nРозклад порожній"
+		if message != nil {
+			_, err = c.Bot().Edit(message, Escape(text), tele.ModeMarkdownV2, GetMarkup(c, markup))
+
+			if errors.Is(err, tele.ErrSameMessageContent) {
+				err = nil
 			}
-			schedule[i].MessageId = msg.ID
+			return err
 		} else {
-			msg, err := c.Bot().Send(c.Recipient(), formatter(c, &day), tele.ModeMarkdownV2, GetMarkup(c, GetDayMarkup(c, day.Date)))
-			if err != nil {
-				return err
-			}
-			schedule[i].MessageId = msg.ID
+			return c.Send(Escape(text), tele.ModeMarkdownV2, GetMarkup(c, markup))
 		}
 	}
 
+	for i, day := range schedule {
+		text := formatter(c, &day)
+		var markup *tele.ReplyMarkup
+		if start.Day() == end.Day() {
+			markup = GetDayMarkup(c, day.Date)
+		}
+
+		var msg *tele.Message
+		if message != nil && start.Day() == end.Day() {
+			msg, err = c.Bot().Edit(message, text, tele.ModeMarkdownV2, GetMarkup(c, markup))
+		} else {
+			msg, err = c.Bot().Send(c.Recipient(), text, tele.ModeMarkdownV2, GetMarkup(c, markup))
+		}
+		if err != nil && !errors.Is(err, tele.ErrSameMessageContent) {
+			return err
+		}
+		schedule[i].MessageId = msg.ID
+	}
+
 	if withGroups {
+		key := fmt.Sprintf("%v|%v", c.Chat().ID, c.Message().ID)
+		msgLastModMu.Lock()
+		count := msgLastMod[key] + 1
+		msgLastMod[key] = count
+		msgLastModMu.Unlock()
+
 		GetScheduleGroups(c, schedule, start, end)
 
-		for _, day := range schedule {
-			msg := tele.StoredMessage{
-				ChatID:    c.Chat().ID,
-				MessageID: fmt.Sprintf("%v", day.MessageId),
-			}
-			if days > 1 {
-				_, err := c.Bot().Edit(msg, formatter(c, &day), tele.ModeMarkdownV2, GetMarkup(c, nil))
-				if err != nil && err != tele.ErrSameMessageContent {
-					return err
+		msgLastModMu.Lock()
+		current := msgLastMod[key]
+		msgLastModMu.Unlock()
+
+		if current == count {
+			for _, day := range schedule {
+				msg := tele.StoredMessage{
+					ChatID:    c.Chat().ID,
+					MessageID: fmt.Sprintf("%v", day.MessageId),
 				}
-			} else {
-				_, err := c.Bot().Edit(msg, formatter(c, &day), tele.ModeMarkdownV2, GetMarkup(c, GetDayMarkup(c, day.Date)))
-				if err != nil && err != tele.ErrSameMessageContent {
+				text := formatter(c, &day)
+				var markup *tele.ReplyMarkup
+				if start.Day() == end.Day() {
+					markup = GetDayMarkup(c, day.Date)
+				}
+
+				_, err = c.Bot().Edit(&msg, text, tele.ModeMarkdownV2, GetMarkup(c, markup))
+				if err != nil && !errors.Is(err, tele.ErrSameMessageContent) {
 					return err
 				}
 			}
@@ -142,4 +181,15 @@ func SendSchedule(c tele.Context, withGroups bool, formatter func(c tele.Context
 	}
 
 	return nil
+}
+
+func SendScheduleWithOptions(c tele.Context, withGroups bool, formatter func(c tele.Context, day *api.Day) string, days int, offset int, startFromMonday bool) error {
+	asked, err := Ask(c)
+	if err != nil || asked {
+		return err
+	}
+
+	start, end := GetDateRange(days, offset, startFromMonday)
+
+	return SendSchedule(c, nil, withGroups, formatter, start, end)
 }

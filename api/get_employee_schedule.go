@@ -32,7 +32,7 @@ func GetEmployeeSchedule(employee KeyValue, startDate time.Time, endDate time.Ti
 		return nil, err
 	}
 
-	var result scheduleReponse
+	var result scheduleResponse
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return nil, err

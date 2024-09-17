@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"errors"
 )
 
 type User struct {
@@ -42,7 +43,7 @@ func GetOrCreateUser(db *sql.DB, id int64, firstname string) (*User, error) {
 
 	err := user.scan(row)
 
-	if err == sql.ErrNoRows {
+	if errors.Is(err, sql.ErrNoRows) {
 		row = user.db.QueryRow("INSERT INTO users (id, firstname) VALUES (?, ?) RETURNING *",
 			id,
 			firstname,

@@ -12,7 +12,7 @@ type Filters struct {
 	Courses        []KeyValue `json:"courses"`
 }
 
-type getFiltersReponse struct {
+type getFiltersResponse struct {
 	D Filters `json:"d"`
 }
 
@@ -34,7 +34,7 @@ func GetFilters() (Filters, error) {
 		return Filters{}, err
 	}
 
-	var result getFiltersReponse
+	var result getFiltersResponse
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return Filters{}, err

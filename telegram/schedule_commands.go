@@ -11,32 +11,32 @@ import (
 )
 
 func Day(c tele.Context) error {
-	return SendSchedule(c, true, FormatDay, 1, 0, false)
+	return SendScheduleWithOptions(c, true, FormatDay, 1, 0, false)
 }
 
 func Next(c tele.Context) error {
-	return SendSchedule(c, true, FormatDay, 1, 1, false)
+	return SendScheduleWithOptions(c, true, FormatDay, 1, 1, false)
 }
 
 func NextNext(c tele.Context) error {
-	return SendSchedule(c, true, FormatDay, 1, 2, false)
+	return SendScheduleWithOptions(c, true, FormatDay, 1, 2, false)
 }
 
 func Week(c tele.Context) error {
-	return SendSchedule(c, true, FormatDay, 7, 0, true)
+	return SendScheduleWithOptions(c, true, FormatDay, 7, 0, true)
 }
 
 func NextWeek(c tele.Context) error {
-	return SendSchedule(c, true, FormatDay, 7, 7, true)
+	return SendScheduleWithOptions(c, true, FormatDay, 7, 7, true)
 }
 
 func Short(c tele.Context) error {
-	return SendSchedule(c, false, FormatDayShort, 21, 0, true)
+	return SendScheduleWithOptions(c, false, FormatDayShort, 21, 0, true)
 }
 
 func hash(str string) string {
 	hasher := fnv.New64a()
-	hasher.Write([]byte(str))
+	_, _ = hasher.Write([]byte(str))
 
 	return fmt.Sprintf("%x", hasher.Sum64())
 }
@@ -80,7 +80,7 @@ func Subject(c tele.Context) error {
 }
 
 func SendSubject(c tele.Context, discipline string) error {
-	return SendSchedule(c, true, func(c tele.Context, day *api.Day) string {
+	return SendScheduleWithOptions(c, true, func(c tele.Context, day *api.Day) string {
 		day2 := api.Day{
 			WeekDay: day.WeekDay,
 			Date:    day.Date,

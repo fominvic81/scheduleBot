@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-type getStudyGroupsRespose struct {
+type getStudyGroupsResponse struct {
 	D struct {
 		StudyGroups []KeyValue `json:"studyGroups"`
 	} `json:"d"`
@@ -34,7 +34,7 @@ func GetStudyGroups(faculty string, educationForm string, course string) ([]KeyV
 		return nil, err
 	}
 
-	var result getStudyGroupsRespose
+	var result getStudyGroupsResponse
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return nil, err

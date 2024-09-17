@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/fominvic81/scheduleBot/api"
 	"github.com/fominvic81/scheduleBot/db"
@@ -43,13 +44,16 @@ func FormatDay(c tele.Context, day *api.Day) string {
 				message += Escape("Групи: Пошук...\n")
 			}
 		}
+
 		message += "\n"
 	}
+
+	message += fmt.Sprintf("Оновлено %s", time.Now().Format("15:04:05"))
 
 	return message
 }
 
-func FormatDayShort(c tele.Context, day *api.Day) string {
+func FormatDayShort(_ tele.Context, day *api.Day) string {
 	r, _ := regexp.Compile(`\d*`)
 
 	message := fmt.Sprintf("%s, %s\n\n", Escape(day.WeekDay), Escape(day.Date))

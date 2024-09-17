@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-type scheduleReponse struct {
+type scheduleResponse struct {
 	D []Class `json:"d"`
 }
 
@@ -36,7 +36,7 @@ func GetSchedule(studyGroup string, startDate time.Time, endDate time.Time) ([]D
 		return nil, err
 	}
 
-	var result scheduleReponse
+	var result scheduleResponse
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return nil, err

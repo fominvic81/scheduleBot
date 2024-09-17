@@ -1,22 +1,17 @@
 package telegram
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"slices"
 	"strings"
-	"sync"
 	"time"
 
-	"github.com/fominvic81/scheduleBot/api"
-	"github.com/fominvic81/scheduleBot/consts"
 	"github.com/fominvic81/scheduleBot/db"
 
 	tele "gopkg.in/telebot.v3"
 )
-
-var msgLastModMu = sync.Mutex{}
-var msgLastMod = map[string]int{}
 
 func boolToInt(a bool) int {
 	if a {
@@ -35,90 +30,81 @@ func CallbackData(c tele.Context) error {
 		key := matches[1]
 		value := matches[2]
 
-		var err error = nil
-		delete := false
-
 		switch key {
 		case "faculty":
 			user.Faculty = &value
-			_, err = Ask(c)
-			delete = true
+			_, err := Ask(c)
+			if err != nil {
+				return err
+			}
+			err = c.Delete()
+			if err != nil {
+				return err
+			}
 		case "form":
 			user.EducationForm = &value
-			_, err = Ask(c)
-			delete = true
+			_, err := Ask(c)
+			if err != nil {
+				return err
+			}
+			err = c.Delete()
+			if err != nil {
+				return err
+			}
 		case "course":
 			user.Course = &value
-			_, err = Ask(c)
-			delete = true
+			_, err := Ask(c)
+			if err != nil {
+				return err
+			}
+			err = c.Delete()
+			if err != nil {
+				return err
+			}
 		case "group":
 			user.StudyGroup = &value
-			err = c.Send("Готово!", GetMarkup(c, nil))
-			delete = true
+			err := c.Send("Готово!", GetMarkup(c, nil))
+			if err != nil {
+				return err
+			}
+			err = c.Delete()
+			if err != nil {
+				return err
+			}
 		case "discipline":
-			delete = true
-			err = SendSubject(c, value)
+			err := SendSubject(c, value)
+			if err != nil {
+				return err
+			}
+			err = c.Delete()
+			if err != nil {
+				return err
+			}
 		case "update":
 			if user.StudyGroup == nil {
-				_, err = Ask(c)
+				_, err := Ask(c)
 				return err
 			}
-			var date time.Time
-			date, err = time.Parse("02.01.2006", value)
+			date, err := time.Parse("02.01.2006", value)
 			if err != nil {
 				return err
 			}
 
-			var days []api.Day
-			days, err = GetSchedule(c, date, date, true)
+			err = SendSchedule(c, c.Message(), true, FormatDay, date, date)
 			if err != nil {
 				return err
-			}
-
-			markup := GetDayMarkup(c, date.Format("02.01.2006"))
-			if len(days) == 0 {
-				err = c.Edit(consts.WeekDays[int(date.Weekday())]+", "+date.Format("02.01.2006")+"\n\nРозкладу немає", markup)
-			} else {
-				text := FormatDay(c, &days[0]) + fmt.Sprintf("Оновлено %s", time.Now().Format("15:04:05"))
-				err = c.Edit(text, tele.ModeMarkdownV2, markup)
-
-				if err != nil && err != tele.ErrSameMessageContent {
-					return err
-				}
-				key := fmt.Sprintf("%v|%v", c.Chat().ID, c.Message().ID)
-
-				msgLastModMu.Lock()
-				count := msgLastMod[key] + 1
-				msgLastMod[key] = count
-				msgLastModMu.Unlock()
-
-				GetScheduleGroups(c, days, date, date)
-
-				msgLastModMu.Lock()
-				current := msgLastMod[key]
-				msgLastModMu.Unlock()
-
-				if current == count {
-					if err != nil {
-						LogError(err, c)
-					} else {
-						text = FormatDay(c, &days[0]) + fmt.Sprintf("Оновлено %s", time.Now().Format("15:04:05"))
-						err = c.Edit(text, tele.ModeMarkdownV2, markup)
-					}
-				}
-			}
-
-			if err == tele.ErrSameMessageContent {
-				err = nil
 			}
 		case "settings":
-			err = c.Edit("Налаштування", GetMarkup(c, &tele.ReplyMarkup{
+			err := c.Edit("Налаштування", GetMarkup(c, &tele.ReplyMarkup{
 				InlineKeyboard: [][]tele.InlineButton{
 					{tele.InlineButton{Text: "Формат розкладу", Data: "settings/format"}},
 					{tele.InlineButton{Text: "Вибіркові дисципліни", Data: "settings/disciplines"}},
 					{tele.InlineButton{Text: "Закрити", Data: "delete"}},
 				},
 			}))
+			if err != nil {
+				return err
+			}
 		case "settings/format":
 			switch value {
 			case "show-groups":
@@ -126,7 +112,7 @@ func CallbackData(c tele.Context) error {
 			case "show-teacher":
 				user.Settings.ShowTeacher = !user.Settings.ShowTeacher
 			}
-			err = user.Save()
+			err := user.Save()
 			if err != nil {
 				return err
 			}
@@ -140,9 +126,11 @@ func CallbackData(c tele.Context) error {
 					{{Text: "Назад", Data: "settings"}},
 				},
 			}))
+			if err != nil {
+				return err
+			}
 		case "settings/disciplines":
-			var schedule []api.Day
-			schedule, err = GetSchedule(c, time.Now().AddDate(0, 0, -14), time.Now().AddDate(0, 0, 14), false)
+			schedule, err := GetSchedule(c, time.Now().AddDate(0, 0, -14), time.Now().AddDate(0, 0, 14), false)
 			if err != nil {
 				return err
 			}
@@ -173,19 +161,20 @@ func CallbackData(c tele.Context) error {
 			}
 			if len(matches) >= 4 {
 				status := matches[3] == "on"
+				fmt.Println(status, matches[3])
 				if clicked, ok := subjects[value]; ok {
-					current := slices.Contains(user.Settings.HiddenSubjects, clicked)
+					current := !slices.Contains(user.Settings.HiddenSubjects, clicked)
 					if current != status {
 						if status {
-							user.Settings.HiddenSubjects = append(user.Settings.HiddenSubjects, clicked)
-						} else {
-							newSubjects := []string{}
+							var newSubjects []string
 							for _, subject := range user.Settings.HiddenSubjects {
 								if subject != clicked {
 									newSubjects = append(newSubjects, subject)
 								}
 							}
 							user.Settings.HiddenSubjects = newSubjects
+						} else {
+							user.Settings.HiddenSubjects = append(user.Settings.HiddenSubjects, clicked)
 						}
 						err = user.Save()
 						if err != nil {
@@ -195,13 +184,13 @@ func CallbackData(c tele.Context) error {
 				}
 			}
 
-			keyboard := [][]tele.InlineButton{}
+			var keyboard [][]tele.InlineButton
 			for hashed, subject := range subjects {
 				hidden := slices.Contains(user.Settings.HiddenSubjects, subject)
 				prefix := []string{"❌", "✅"}[boolToInt(!hidden)]
-				statusText := "on"
+				statusText := "off"
 				if hidden {
-					statusText = "off"
+					statusText = "on"
 				}
 
 				keyboard = append(keyboard, []tele.InlineButton{{
@@ -222,25 +211,17 @@ func CallbackData(c tele.Context) error {
 			err = c.Edit("Вибіркові дисципліни", GetMarkup(c, &tele.ReplyMarkup{
 				InlineKeyboard: keyboard,
 			}))
-			if err == tele.ErrSameMessageContent {
+			if errors.Is(err, tele.ErrSameMessageContent) {
 				err = nil
 			}
 		case "delete":
-			delete = true
-		}
-
-		if err != nil {
-			return err
-		}
-
-		if delete {
-			err = c.Delete()
+			err := c.Delete()
 			if err != nil {
 				return err
 			}
 		}
 
-		err = user.Save()
+		err := user.Save()
 		if err != nil {
 			return err
 		}

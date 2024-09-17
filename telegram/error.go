@@ -6,7 +6,7 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-func ErrorHanler(err error, c tele.Context) {
+func ErrorHandler(err error, c tele.Context) {
 	LogError(err, c)
 
 	err2 := c.Send("Сталася помилка")

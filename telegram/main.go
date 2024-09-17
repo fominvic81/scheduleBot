@@ -18,14 +18,17 @@ func SetCommands(b *tele.Bot) {
 			Description: command.Description,
 		})
 	}
-	b.SetCommands(teleCommands)
+	err := b.SetCommands(teleCommands)
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 func Init(token string, database *sql.DB) {
 	pref := tele.Settings{
 		Token:   token,
 		Poller:  &tele.LongPoller{Timeout: 10 * time.Second},
-		OnError: ErrorHanler,
+		OnError: ErrorHandler,
 	}
 
 	b, err := tele.NewBot(pref)

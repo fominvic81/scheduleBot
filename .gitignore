@@ -3,6 +3,6 @@ node_modules
 data
 db.sqlite
 tmp
-db.sqlite
 logs.txt
 scheduleBot
+.idea
