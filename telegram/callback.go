@@ -161,7 +161,6 @@ func CallbackData(c tele.Context) error {
 			}
 			if len(matches) >= 4 {
 				status := matches[3] == "on"
-				fmt.Println(status, matches[3])
 				if clicked, ok := subjects[value]; ok {
 					current := !slices.Contains(user.Settings.HiddenSubjects, clicked)
 					if current != status {
@@ -206,9 +205,26 @@ func CallbackData(c tele.Context) error {
 				{Text: "Вимкнути всі ❌", Data: "settings/disciplines:all-off"},
 				{Text: "Ввімкнути всі ✅", Data: "settings/disciplines:all-on"},
 			})
+
+			numSelected := len(subjects) - len(user.Settings.HiddenSubjects)
+
+			text := "Вибіркові дисципліни"
+			if numSelected < 6 {
+				alarm := ""
+				if numSelected == 1 {
+					alarm = fmt.Sprintf("⚠️ Увага! Ви вибрали тільки %d дисципліну", numSelected)
+				} else if numSelected <= 4 && numSelected != 0 {
+					alarm = fmt.Sprintf("⚠️ Увага! Ви вибрали тільки %d дисципліни", numSelected)
+				} else {
+					alarm = fmt.Sprintf("⚠️ Увага! Ви вибрали тільки %d дисциплін", numSelected)
+				}
+				text += "\n\n" + alarm
+				keyboard = append(keyboard, []tele.InlineButton{{Text: alarm, Data: "-"}})
+			}
+
 			keyboard = append(keyboard, []tele.InlineButton{{Text: "Назад ↩️", Data: "settings"}})
 
-			err = c.Edit("Вибіркові дисципліни", GetMarkup(c, &tele.ReplyMarkup{
+			err = c.Edit(text, GetMarkup(c, &tele.ReplyMarkup{
 				InlineKeyboard: keyboard,
 			}))
 			if errors.Is(err, tele.ErrSameMessageContent) {
