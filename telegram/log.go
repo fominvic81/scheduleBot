@@ -22,8 +22,8 @@ func LogAction(c tele.Context) {
 		text += fmt.Sprintf("cb{%s: %s} ", callback.MessageID, callback.Data)
 	}
 
-	message := c.Message()
-	if message != nil && callback == nil {
+	message := c.Update().Message
+	if message != nil {
 		if message.Text != "" {
 			text += fmt.Sprintf("msg{%d: %s} ", message.ID, message.Text)
 		}

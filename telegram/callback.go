@@ -98,7 +98,7 @@ func CallbackData(c tele.Context) error {
 			err := c.Edit("Налаштування", GetMarkup(c, &tele.ReplyMarkup{
 				InlineKeyboard: [][]tele.InlineButton{
 					{tele.InlineButton{Text: "Формат розкладу", Data: "settings/format"}},
-					{tele.InlineButton{Text: "Вибіркові дисципліни", Data: "settings/disciplines"}},
+					{tele.InlineButton{Text: "Фільтрація дисциплін", Data: "settings/disciplines"}},
 					{tele.InlineButton{Text: "Закрити", Data: "delete"}},
 				},
 			}))
@@ -208,7 +208,7 @@ func CallbackData(c tele.Context) error {
 
 			numSelected := len(subjects) - len(user.Settings.HiddenSubjects)
 
-			text := "Вибіркові дисципліни"
+			text := "Фільтрація дисциплін"
 			if numSelected < 6 {
 				alarm := ""
 				if numSelected == 1 {

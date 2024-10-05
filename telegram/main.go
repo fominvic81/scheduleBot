@@ -47,6 +47,7 @@ func Init(token string, database *sql.DB) {
 	b.Use(LogMiddleware)
 	b.Use(UserMiddleware)
 	b.Use(KeyboardMiddleware)
+	b.Use(MetricsMiddleware)
 
 	commands := GetCommands()
 
@@ -56,6 +57,14 @@ func Init(token string, database *sql.DB) {
 
 	b.Handle(tele.OnText, HandleText)
 	b.Handle(tele.OnCallback, CallbackData)
+
+	// Fix middlewares not being called if there are no matching handlers
+	b.Handle(tele.OnMedia, func(ctx tele.Context) error {
+		return nil
+	})
+	b.Handle(tele.OnEdited, func(ctx tele.Context) error {
+		return nil
+	})
 
 	b.Start()
 }

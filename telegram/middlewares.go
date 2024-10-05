@@ -90,3 +90,80 @@ func GetMarkup(c tele.Context, markup *tele.ReplyMarkup) *tele.ReplyMarkup {
 	}
 	return markup
 }
+
+func MetricWriteMessage(metric *db.Metric, message *tele.Message) {
+	metric.Content = message.Text
+
+	media := message.Media()
+	if media != nil {
+		mediaType := media.MediaType()
+		metric.MediaType = mediaType
+		mediaFile := media.MediaFile()
+
+		if mediaFile != nil {
+			metric.MediaId = mediaFile.FileID
+		}
+
+		if metric.Content != "" { // is it even possible?
+			metric.Content += " |> " + message.Caption
+		} else {
+			metric.Content = message.Caption
+		}
+	}
+	metric.AlbumId = message.AlbumID
+
+	if message.ReplyTo != nil {
+		metric.ReplyTo = int64(message.ReplyTo.ID)
+	}
+}
+
+func MetricsMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
+	return func(c tele.Context) error {
+		user := c.Get("user").(*db.User)
+
+		metric := db.Metric{}
+
+		sender := c.Sender()
+		chat := c.Chat()
+		callback := c.Callback()
+		message := c.Update().Message
+		editedMessage := c.Update().EditedMessage
+
+		if sender != nil {
+			metric.UserId = sender.ID
+		}
+		if chat != nil {
+			metric.ChatId = chat.ID
+		}
+
+		if callback != nil {
+			metric.EventType = db.EventTypeReplyCallback
+
+			metric.Content = callback.Data
+			if callback.Message != nil {
+				metric.ReplyTo = int64(callback.Message.ID)
+			}
+		} else if editedMessage != nil {
+			metric.EventType = db.EventTypeMessageEdited
+
+			MetricWriteMessage(&metric, editedMessage)
+		} else if message != nil {
+			metric.EventType = db.EventTypeMessage
+
+			MetricWriteMessage(&metric, message)
+		}
+
+		if user.Messages == 1 {
+			metric.Flags |= db.MetricFlagFirstMessage
+		}
+
+		database := c.Get("database").(*sql.DB)
+
+		err := db.WriteMetric(database, metric)
+		if err != nil {
+			LogError(err, c)
+		}
+
+		return next(c)
+	}
+}
