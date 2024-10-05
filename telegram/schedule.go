@@ -3,10 +3,11 @@ package telegram
 import (
 	"errors"
 	"fmt"
-	"github.com/fominvic81/scheduleBot/consts"
 	"slices"
 	"sync"
 	"time"
+
+	"github.com/fominvic81/scheduleBot/consts"
 
 	"github.com/fominvic81/scheduleBot/api"
 	"github.com/fominvic81/scheduleBot/db"
@@ -117,14 +118,14 @@ func SendSchedule(c tele.Context, message *tele.Message, withGroups bool, format
 
 		text += "\n\nРозклад порожній"
 		if message != nil {
-			_, err = c.Bot().Edit(message, Escape(text), tele.ModeMarkdownV2, GetMarkup(c, markup))
+			_, err = c.Bot().Edit(message, Escape(text), tele.ModeMarkdownV2, markup)
 
 			if errors.Is(err, tele.ErrSameMessageContent) {
 				err = nil
 			}
 			return err
 		} else {
-			return c.Send(Escape(text), tele.ModeMarkdownV2, GetMarkup(c, markup))
+			return c.Send(Escape(text), tele.ModeMarkdownV2, markup)
 		}
 	}
 
@@ -137,9 +138,9 @@ func SendSchedule(c tele.Context, message *tele.Message, withGroups bool, format
 
 		var msg *tele.Message
 		if message != nil && start.Day() == end.Day() {
-			msg, err = c.Bot().Edit(message, text, tele.ModeMarkdownV2, GetMarkup(c, markup))
+			msg, err = c.Bot().Edit(message, text, tele.ModeMarkdownV2, markup)
 		} else {
-			msg, err = c.Bot().Send(c.Recipient(), text, tele.ModeMarkdownV2, GetMarkup(c, markup))
+			msg, err = c.Bot().Send(c.Recipient(), text, tele.ModeMarkdownV2, markup)
 		}
 		if err != nil && !errors.Is(err, tele.ErrSameMessageContent) {
 			return err
@@ -172,7 +173,7 @@ func SendSchedule(c tele.Context, message *tele.Message, withGroups bool, format
 					markup = GetDayMarkup(c, day.Date)
 				}
 
-				_, err = c.Bot().Edit(&msg, text, tele.ModeMarkdownV2, GetMarkup(c, markup))
+				_, err = c.Bot().Edit(&msg, text, tele.ModeMarkdownV2, markup)
 				if err != nil && !errors.Is(err, tele.ErrSameMessageContent) {
 					return err
 				}

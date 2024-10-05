@@ -35,7 +35,7 @@ func Ask(c tele.Context) (bool, error) {
 			}
 
 			markup := GroupInRows(buttons, 3)
-			err = c.Send("Виберіть факультет", GetMarkup(c, &markup))
+			err = c.Send("Виберіть факультет", &markup)
 		} else if user.EducationForm == nil {
 			buttons := make([]tele.Btn, 0, len(filters.EducationForms))
 			for _, entry := range filters.EducationForms {
@@ -43,7 +43,7 @@ func Ask(c tele.Context) (bool, error) {
 			}
 
 			markup := GroupInRows(buttons, 3)
-			err = c.Send("Виберіть форму навчання", GetMarkup(c, &markup))
+			err = c.Send("Виберіть форму навчання", &markup)
 		} else if user.Course == nil {
 			buttons := make([]tele.Btn, 0, len(filters.Courses))
 			for _, entry := range filters.Courses {
@@ -51,7 +51,7 @@ func Ask(c tele.Context) (bool, error) {
 			}
 
 			markup := GroupInRows(buttons, 3)
-			err = c.Send("Виберіть курс", GetMarkup(c, &markup))
+			err = c.Send("Виберіть курс", &markup)
 		}
 
 		return true, err
@@ -70,7 +70,7 @@ func Ask(c tele.Context) (bool, error) {
 			if err != nil {
 				return false, err
 			}
-			return false, c.Send("Не знайдено навчальних груп з такими даними", GetMarkup(c, nil))
+			return false, c.Send("Не знайдено навчальних груп з такими даними")
 		}
 
 		buttons := make([]tele.Btn, 0, len(studyGroups))
@@ -80,7 +80,7 @@ func Ask(c tele.Context) (bool, error) {
 
 		markup := GroupInRows(buttons, 3)
 
-		return true, c.Send("Виберіть навчальну групу", GetMarkup(c, &markup))
+		return true, c.Send("Виберіть навчальну групу", &markup)
 	}
 
 	return false, nil

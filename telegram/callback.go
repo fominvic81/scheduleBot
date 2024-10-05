@@ -63,7 +63,7 @@ func CallbackData(c tele.Context) error {
 			}
 		case "group":
 			user.StudyGroup = &value
-			err := c.Send("Готово!", GetMarkup(c, nil))
+			err := c.Send("Готово!")
 			if err != nil {
 				return err
 			}
@@ -95,13 +95,13 @@ func CallbackData(c tele.Context) error {
 				return err
 			}
 		case "settings":
-			err := c.Edit("Налаштування", GetMarkup(c, &tele.ReplyMarkup{
+			err := c.Edit("Налаштування", &tele.ReplyMarkup{
 				InlineKeyboard: [][]tele.InlineButton{
 					{tele.InlineButton{Text: "Формат розкладу", Data: "settings/format"}},
 					{tele.InlineButton{Text: "Фільтрація дисциплін", Data: "settings/disciplines"}},
 					{tele.InlineButton{Text: "Закрити", Data: "delete"}},
 				},
-			}))
+			})
 			if err != nil {
 				return err
 			}
@@ -119,13 +119,13 @@ func CallbackData(c tele.Context) error {
 
 			showGroups := []string{"Не показувати", "Частково", "Всі"}[user.Settings.ShowGroups]
 			showTeacher := []string{"Не показувати", "Показувати"}[boolToInt(user.Settings.ShowTeacher)]
-			err = c.Edit("Формат повідомлення", GetMarkup(c, &tele.ReplyMarkup{
+			err = c.Edit("Формат повідомлення", &tele.ReplyMarkup{
 				InlineKeyboard: [][]tele.InlineButton{
 					{{Text: "Групи: " + showGroups, Data: "settings/format:show-groups"}},
 					{{Text: "Викладач: " + showTeacher, Data: "settings/format:show-teacher"}},
 					{{Text: "Назад", Data: "settings"}},
 				},
-			}))
+			})
 			if err != nil {
 				return err
 			}
@@ -224,9 +224,9 @@ func CallbackData(c tele.Context) error {
 
 			keyboard = append(keyboard, []tele.InlineButton{{Text: "Назад ↩️", Data: "settings"}})
 
-			err = c.Edit(text, GetMarkup(c, &tele.ReplyMarkup{
+			err = c.Edit(text, &tele.ReplyMarkup{
 				InlineKeyboard: keyboard,
-			}))
+			})
 			if errors.Is(err, tele.ErrSameMessageContent) {
 				err = nil
 			}

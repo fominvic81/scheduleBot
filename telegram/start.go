@@ -5,7 +5,7 @@ import (
 )
 
 func Start(c tele.Context) error {
-	err := c.Send(HelpMsg(), GetMarkup(c, nil))
+	err := c.Send(HelpMsg())
 
 	if err != nil {
 		return err
