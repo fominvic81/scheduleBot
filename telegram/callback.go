@@ -23,12 +23,17 @@ func boolToInt(a bool) int {
 func CallbackData(c tele.Context) error {
 	user := c.Get("user").(*db.User)
 
-	r, _ := regexp.Compile("([a-z/]+)(?::([^;]+);?(.*))?")
+	r, _ := regexp.Compile(`^([a-z/]+)(?::([^;]+))?(?:;.+)?`)
 	matches := r.FindStringSubmatch(c.Data())
 
 	if len(matches) >= 3 {
 		key := matches[1]
-		value := matches[2]
+		values := strings.Split(matches[2], "|")
+		value := values[0]
+		value2 := ""
+		if len(values) > 1 {
+			value2 = values[1]
+		}
 
 		switch key {
 		case "faculty":
@@ -88,6 +93,20 @@ func CallbackData(c tele.Context) error {
 			date, err := time.Parse("02.01.2006", value)
 			if err != nil {
 				return err
+			}
+
+			if value2 != "" {
+				msgIds := strings.Split(value2, ",")
+				for _, id := range msgIds {
+					msg := tele.StoredMessage{
+						ChatID:    c.Chat().ID,
+						MessageID: id,
+					}
+					err := c.Bot().Delete(msg)
+					if err != nil {
+						LogError(err, c)
+					}
+				}
 			}
 
 			err = SendSchedule(c, c.Message(), true, FormatDay, date, date)
@@ -159,8 +178,8 @@ func CallbackData(c tele.Context) error {
 					return err
 				}
 			}
-			if len(matches) >= 4 {
-				status := matches[3] == "on"
+			if value2 != "" {
+				status := value2 == "on"
 				if clicked, ok := subjects[value]; ok {
 					current := !slices.Contains(user.Settings.HiddenSubjects, clicked)
 					if current != status {
@@ -194,7 +213,7 @@ func CallbackData(c tele.Context) error {
 
 				keyboard = append(keyboard, []tele.InlineButton{{
 					Text: fmt.Sprintf("%s %s", prefix, subject),
-					Data: "settings/disciplines:" + hashed + ";" + statusText,
+					Data: "settings/disciplines:" + hashed + "|" + statusText,
 				}})
 			}
 			slices.SortFunc(keyboard, func(a []tele.InlineButton, b []tele.InlineButton) int {

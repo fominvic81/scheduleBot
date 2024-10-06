@@ -21,10 +21,10 @@ type Class struct {
 }
 
 type Day struct {
-	MessageId int
-	WeekDay   string
-	Date      string
-	Classes   []Class
+	MessageIds []int
+	WeekDay    string
+	Date       string
+	Classes    []Class
 }
 
 func groupByDays(classes []Class) []Day {

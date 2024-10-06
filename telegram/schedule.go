@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"strings"
 	"sync"
 	"time"
 
@@ -72,7 +73,7 @@ func GetScheduleGroups(c tele.Context, schedule []api.Day, start time.Time, end 
 	}
 }
 
-func GetDayMarkup(c tele.Context, date string) *tele.ReplyMarkup {
+func GetDayMarkup(c tele.Context, date string, messageIdsToDelete []string) *tele.ReplyMarkup {
 	current, err := time.Parse("02.01.2006", date)
 
 	if err != nil {
@@ -80,14 +81,19 @@ func GetDayMarkup(c tele.Context, date string) *tele.ReplyMarkup {
 		return &tele.ReplyMarkup{}
 	}
 
+	msgsToDelete := ""
+	if len(messageIdsToDelete) > 0 {
+		msgsToDelete = "|" + strings.Join(messageIdsToDelete, ",")
+	}
+
 	return &tele.ReplyMarkup{
 		InlineKeyboard: [][]tele.InlineButton{
 			{
-				{Text: "⏪", Data: "update:" + current.AddDate(0, 0, -1).Format("02.01.2006") + ";prev"},
-				{Text: "Сьогодні", Data: "update:" + time.Now().Format("02.01.2006") + ";today"},
-				{Text: "⏩", Data: "update:" + current.AddDate(0, 0, 1).Format("02.01.2006") + ";next"},
+				{Text: "⏪", Data: "update:" + current.AddDate(0, 0, -1).Format("02.01.2006") + msgsToDelete + ";prev"},
+				{Text: "Сьогодні", Data: "update:" + time.Now().Format("02.01.2006") + msgsToDelete + ";today"},
+				{Text: "⏩", Data: "update:" + current.AddDate(0, 0, 1).Format("02.01.2006") + msgsToDelete + ";next"},
 			},
-			{{Text: "Оновити", Data: "update:" + date}},
+			{{Text: "Оновити", Data: "update:" + date + msgsToDelete}},
 		},
 	}
 }
@@ -95,7 +101,7 @@ func GetDayMarkup(c tele.Context, date string) *tele.ReplyMarkup {
 var msgLastModMu = sync.Mutex{}
 var msgLastMod = map[string]int{}
 
-func SendSchedule(c tele.Context, message *tele.Message, withGroups bool, formatter func(c tele.Context, day *api.Day) string, start time.Time, end time.Time) error {
+func SendSchedule(c tele.Context, message *tele.Message, withGroups bool, formatter func(c tele.Context, day *api.Day) []string, start time.Time, end time.Time) error {
 	asked, err := Ask(c)
 	if err != nil || asked {
 		return err
@@ -109,7 +115,7 @@ func SendSchedule(c tele.Context, message *tele.Message, withGroups bool, format
 	if len(schedule) == 0 {
 		var markup *tele.ReplyMarkup
 		if start.Day() == end.Day() {
-			markup = GetDayMarkup(c, start.Format("02.01.2006"))
+			markup = GetDayMarkup(c, start.Format("02.01.2006"), nil)
 		}
 		text := consts.WeekDays[start.Weekday()] + ", " + start.Format("02.01.2006")
 		if start.Day() != end.Day() {
@@ -130,22 +136,31 @@ func SendSchedule(c tele.Context, message *tele.Message, withGroups bool, format
 	}
 
 	for i, day := range schedule {
-		text := formatter(c, &day)
-		var markup *tele.ReplyMarkup
-		if start.Day() == end.Day() {
-			markup = GetDayMarkup(c, day.Date)
-		}
+		texts := formatter(c, &day)
 
+		messageIdsToDelete := []string{}
 		var msg *tele.Message
-		if message != nil && start.Day() == end.Day() {
-			msg, err = c.Bot().Edit(message, text, tele.ModeMarkdownV2, markup)
-		} else {
-			msg, err = c.Bot().Send(c.Recipient(), text, tele.ModeMarkdownV2, markup)
+		for j, text := range texts {
+			lastIteration := j == len(texts)-1
+
+			var markup *tele.ReplyMarkup
+			if start.Day() == end.Day() && lastIteration {
+				markup = GetDayMarkup(c, day.Date, messageIdsToDelete)
+			}
+
+			if message != nil && start.Day() == end.Day() {
+				msg, err = c.Bot().Edit(message, text, tele.ModeMarkdownV2, markup)
+			} else {
+				msg, err = c.Bot().Send(c.Recipient(), text, tele.ModeMarkdownV2, markup)
+			}
+			if err != nil && !errors.Is(err, tele.ErrSameMessageContent) {
+				return err
+			}
+			schedule[i].MessageIds = append(schedule[i].MessageIds, msg.ID)
+			if !lastIteration {
+				messageIdsToDelete = append(messageIdsToDelete, fmt.Sprintf("%d", msg.ID))
+			}
 		}
-		if err != nil && !errors.Is(err, tele.ErrSameMessageContent) {
-			return err
-		}
-		schedule[i].MessageId = msg.ID
 	}
 
 	if withGroups {
@@ -163,19 +178,37 @@ func SendSchedule(c tele.Context, message *tele.Message, withGroups bool, format
 
 		if current == count {
 			for _, day := range schedule {
-				msg := tele.StoredMessage{
-					ChatID:    c.Chat().ID,
-					MessageID: fmt.Sprintf("%v", day.MessageId),
-				}
-				text := formatter(c, &day)
-				var markup *tele.ReplyMarkup
-				if start.Day() == end.Day() {
-					markup = GetDayMarkup(c, day.Date)
-				}
+				texts := formatter(c, &day)
+				messageIdsToDelete := []string{}
 
-				_, err = c.Bot().Edit(&msg, text, tele.ModeMarkdownV2, markup)
-				if err != nil && !errors.Is(err, tele.ErrSameMessageContent) {
-					return err
+				for i, text := range texts {
+					lastIteration := i == len(texts)-1
+
+					var markup *tele.ReplyMarkup
+					if start.Day() == end.Day() && lastIteration {
+						markup = GetDayMarkup(c, day.Date, messageIdsToDelete)
+					}
+
+					if i < len(day.MessageIds) {
+						msg := tele.StoredMessage{
+							ChatID:    c.Chat().ID,
+							MessageID: fmt.Sprintf("%d", day.MessageIds[i]),
+						}
+
+						_, err = c.Bot().Edit(&msg, text, tele.ModeMarkdownV2, markup)
+						if err != nil && !errors.Is(err, tele.ErrSameMessageContent) {
+							return err
+						}
+						if !lastIteration {
+							messageIdsToDelete = append(messageIdsToDelete, msg.MessageID)
+						}
+					} else {
+						msg, err := c.Bot().Send(c.Chat(), text, tele.ModeMarkdownV2, markup)
+						if err != nil && !errors.Is(err, tele.ErrSameMessageContent) {
+							return err
+						}
+						messageIdsToDelete = append(messageIdsToDelete, fmt.Sprintf("%d", msg.ID))
+					}
 				}
 			}
 		}
@@ -184,7 +217,7 @@ func SendSchedule(c tele.Context, message *tele.Message, withGroups bool, format
 	return nil
 }
 
-func SendScheduleWithOptions(c tele.Context, withGroups bool, formatter func(c tele.Context, day *api.Day) string, days int, offset int, startFromMonday bool) error {
+func SendScheduleWithOptions(c tele.Context, withGroups bool, formatter func(c tele.Context, day *api.Day) []string, days int, offset int, startFromMonday bool) error {
 	asked, err := Ask(c)
 	if err != nil || asked {
 		return err

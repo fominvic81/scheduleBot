@@ -80,7 +80,7 @@ func Subject(c tele.Context) error {
 }
 
 func SendSubject(c tele.Context, discipline string) error {
-	return SendScheduleWithOptions(c, true, func(c tele.Context, day *api.Day) string {
+	return SendScheduleWithOptions(c, true, func(c tele.Context, day *api.Day) []string {
 		day2 := api.Day{
 			WeekDay: day.WeekDay,
 			Date:    day.Date,

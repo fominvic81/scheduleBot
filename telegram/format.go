@@ -16,18 +16,24 @@ func Escape(msg string) string {
 	return r.ReplaceAllString(msg, "\\$1")
 }
 
-func FormatDay(c tele.Context, day *api.Day) string {
+func FormatDay(c tele.Context, day *api.Day) []string {
 	user := c.Get("user").(*db.User)
 
-	message := fmt.Sprintf("%s, %s\n\n", Escape(day.WeekDay), Escape(day.Date))
+	messages := []string{}
 
-	for _, class := range day.Classes {
-		message += fmt.Sprintf("⚪ *%s*, \\[%s\\-%s\\]\n", Escape(class.StudyTime), Escape(class.Begin), Escape(class.End))
-		message += fmt.Sprintf("Предмет: %s\n", Escape(class.Discipline))
+	header := fmt.Sprintf("%s, %s\n\n", Escape(day.WeekDay), Escape(day.Date))
+	footer := fmt.Sprintf("Оновлено %s", time.Now().Format("15:04:05"))
+
+	message := header
+
+	for i, class := range day.Classes {
+		classMessage := ""
+		classMessage += fmt.Sprintf("⚪ *%s*, \\[%s\\-%s\\]\n", Escape(class.StudyTime), Escape(class.Begin), Escape(class.End))
+		classMessage += fmt.Sprintf("Предмет: %s\n", Escape(class.Discipline))
 		if user.Settings.ShowTeacher {
-			message += fmt.Sprintf("Викладач: %s\n", Escape(class.Employee))
+			classMessage += fmt.Sprintf("Викладач: %s\n", Escape(class.Employee))
 		}
-		message += fmt.Sprintf("Тип: \\[*%s*\\] Кабінет: \\[*%s*\\]\n", Escape(class.Type), Escape(class.Cabinet))
+		classMessage += fmt.Sprintf("Тип: \\[*%s*\\] Кабінет: \\[*%s*\\]\n", Escape(class.Type), Escape(class.Cabinet))
 
 		if user.Settings.ShowGroups != 0 {
 			if class.Groups != "" {
@@ -39,21 +45,30 @@ func FormatDay(c tele.Context, day *api.Day) string {
 
 					groups = fmt.Sprintf("%s... (І ще %v)", groups[:strings.LastIndex(groups, ",")], count)
 				}
-				message += fmt.Sprintf("Групи: %s\n", Escape(groups))
+				classMessage += fmt.Sprintf("Групи: %s\n", Escape(groups))
 			} else {
-				message += Escape("Групи: Пошук...\n")
+				classMessage += Escape("Групи: Пошук...\n")
 			}
 		}
 
-		message += "\n"
+		classMessage += "\n"
+
+		if len(message)+len(classMessage)+len(footer) >= 4096 || i == len(day.Classes)-1 {
+			message += footer
+			messages = append(messages, message)
+
+			message = Escape("...\n\n") + header
+		}
+
+		message += classMessage
 	}
 
-	message += fmt.Sprintf("Оновлено %s", time.Now().Format("15:04:05"))
+	// messages = append(messages, message)
 
-	return message
+	return messages
 }
 
-func FormatDayShort(_ tele.Context, day *api.Day) string {
+func FormatDayShort(_ tele.Context, day *api.Day) []string {
 	r, _ := regexp.Compile(`\d*`)
 
 	message := fmt.Sprintf("%s, %s\n\n", Escape(day.WeekDay), Escape(day.Date))
@@ -62,5 +77,5 @@ func FormatDayShort(_ tele.Context, day *api.Day) string {
 		message += fmt.Sprintf("%s: %s, %s\n", r.FindString(class.StudyTime), Escape(class.Discipline), Escape(class.Type))
 	}
 
-	return message
+	return []string{message}
 }
