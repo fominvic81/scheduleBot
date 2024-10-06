@@ -23,7 +23,7 @@ func boolToInt(a bool) int {
 func CallbackData(c tele.Context) error {
 	user := c.Get("user").(*db.User)
 
-	r, _ := regexp.Compile(`^([a-z/]+)(?::([^;]+))?(?:;.+)?`)
+	r, _ := regexp.Compile(`([a-z/]+)(?::([^;]+))?(?:;.+)?`)
 	matches := r.FindStringSubmatch(c.Data())
 
 	if len(matches) >= 3 {
