@@ -26,7 +26,7 @@ func FormatDay(c tele.Context, day *api.Day) []string {
 
 	message := header
 
-	for i, class := range day.Classes {
+	for _, class := range day.Classes {
 		classMessage := ""
 		classMessage += fmt.Sprintf("⚪ *%s*, \\[%s\\-%s\\]\n", Escape(class.StudyTime), Escape(class.Begin), Escape(class.End))
 		classMessage += fmt.Sprintf("Предмет: %s\n", Escape(class.Discipline))
@@ -53,7 +53,7 @@ func FormatDay(c tele.Context, day *api.Day) []string {
 
 		classMessage += "\n"
 
-		if len(message)+len(classMessage)+len(footer) >= 4096 || i == len(day.Classes)-1 {
+		if len(message)+len(classMessage)+len(footer) >= 4096 {
 			message += footer
 			messages = append(messages, message)
 
@@ -63,7 +63,8 @@ func FormatDay(c tele.Context, day *api.Day) []string {
 		message += classMessage
 	}
 
-	// messages = append(messages, message)
+	message += footer
+	messages = append(messages, message)
 
 	return messages
 }

@@ -8,7 +8,7 @@ import (
 )
 
 func columnExists(db *sql.DB, table string, column string) (bool, error) {
-	res, err := db.Query(fmt.Sprintf("PRAGMA table_info(%s);", table))
+	res, err := db.Query(fmt.Sprintf("PRAGMA table_info(%s)", table))
 
 	if err != nil {
 		return false, err
