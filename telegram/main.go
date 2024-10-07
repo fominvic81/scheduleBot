@@ -46,8 +46,9 @@ func Init(token string, database *sql.DB) {
 	})
 	b.Use(LogMiddleware)
 	b.Use(UserMiddleware)
-	b.Use(KeyboardMiddleware)
 	b.Use(MetricsMiddleware)
+	// b.Use(BanMiddleware)
+	b.Use(KeyboardMiddleware)
 
 	commands := GetCommands()
 

@@ -2,9 +2,55 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 
 	_ "github.com/mattn/go-sqlite3"
 )
+
+func columnExists(db *sql.DB, table string, column string) (bool, error) {
+	res, err := db.Query(fmt.Sprintf("PRAGMA table_info(%s);", table))
+
+	if err != nil {
+		return false, err
+	}
+
+	var name string
+	var sink interface{}
+
+	for res.Next() {
+		err = res.Scan(
+			&sink,
+			&name,
+			&sink,
+			&sink,
+			&sink,
+			&sink,
+		)
+		if err != nil {
+			_ = res.Close()
+			return false, err
+		}
+		if name == column {
+			return true, res.Close()
+		}
+	}
+
+	return false, res.Close()
+}
+
+func createColumnIfNotExists(db *sql.DB, table string, column string, options string) error {
+	columnExists, err := columnExists(db, table, column)
+	if err != nil {
+		return err
+	}
+	if !columnExists {
+		_, err = db.Exec(fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s %s", table, column, options))
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
 func Init() (*sql.DB, error) {
 	db, err := sql.Open("sqlite3", "./db.sqlite")
@@ -51,7 +97,7 @@ func Init() (*sql.DB, error) {
 		album_id         TEXT    NOT NULL,
 		reply_to         INTEGER NOT NULL,
 		flags            INTEGER NOT NULL,
-		created_at       INTEGER NOT NULL DEFAULT CURRENT_TIMESTAMP
+		created_at       INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
 	)`)
 	if err != nil {
 		return nil, err
@@ -63,6 +109,11 @@ func Init() (*sql.DB, error) {
 	}
 
 	_, err = db.Exec("CREATE INDEX IF NOT EXISTS metrics_chat_id_index on metrics (chat_id)")
+	if err != nil {
+		return nil, err
+	}
+
+	err = createColumnIfNotExists(db, "users", "banned_until", "INTEGER NOT NULL DEFAULT 0")
 	if err != nil {
 		return nil, err
 	}

@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"errors"
+	"time"
 )
 
 type User struct {
@@ -19,10 +20,12 @@ type User struct {
 	IsAdmin         bool
 	KeyboardVersion int64
 	Settings        *UserSettings
+	BannedUntil     time.Time
 }
 
 func (user *User) scan(scanner interface{ Scan(src ...any) error }) error {
-	return scanner.Scan(
+	bannedUntil := int64(0)
+	err := scanner.Scan(
 		&user.Id,
 		&user.Messages,
 		&user.Firstname,
@@ -34,7 +37,10 @@ func (user *User) scan(scanner interface{ Scan(src ...any) error }) error {
 		&user.StudyGroup,
 		&user.IsAdmin,
 		&user.KeyboardVersion,
+		&bannedUntil,
 	)
+	user.BannedUntil = time.Unix(bannedUntil, 0).Local()
+	return err
 }
 
 func GetOrCreateUser(db *sql.DB, id int64, firstname string) (*User, error) {
@@ -75,7 +81,8 @@ func (user *User) Save() error {
 			course = ?,
 			studyGroup = ?,
 			isAdmin = ?,
-			keyboardVersion = ?
+			keyboardVersion = ?,
+			banned_until = ?
 		WHERE id = ? RETURNING *`,
 		user.Messages,
 		user.Firstname,
@@ -87,6 +94,7 @@ func (user *User) Save() error {
 		user.StudyGroup,
 		user.IsAdmin,
 		user.KeyboardVersion,
+		user.BannedUntil.Unix(),
 		user.Id,
 	)
 	err := user.scan(row)

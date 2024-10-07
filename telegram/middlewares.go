@@ -3,6 +3,8 @@ package telegram
 import (
 	"database/sql"
 	"errors"
+	"sync"
+	"time"
 
 	"github.com/fominvic81/scheduleBot/consts"
 	"github.com/fominvic81/scheduleBot/db"
@@ -15,6 +17,13 @@ func EmptyStrAsNil(str string) *string {
 		return nil
 	}
 	return &str
+}
+
+func LogMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
+	return func(c tele.Context) error {
+		LogAction(c)
+		return next(c)
+	}
 }
 
 func UserMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
@@ -40,40 +49,6 @@ func UserMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 		}
 
 		c.Set("user", user)
-		return next(c)
-	}
-}
-
-func LogMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
-	return func(c tele.Context) error {
-		LogAction(c)
-		return next(c)
-	}
-}
-
-func KeyboardMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
-	return func(c tele.Context) error {
-		user := c.Get("user").(*db.User)
-
-		if user.KeyboardVersion != consts.KeyboardVersion {
-			keyboard := GetReplyKeyboard()
-
-			_, err := c.Bot().Send(c.Recipient(), "Оновлено клавіатуру", &tele.ReplyMarkup{
-				ReplyKeyboard:  keyboard,
-				ResizeKeyboard: true,
-			})
-			if err != nil {
-				return err
-			}
-
-			user.KeyboardVersion = consts.KeyboardVersion
-
-			err = user.Save()
-			if err != nil {
-				return err
-			}
-		}
-
 		return next(c)
 	}
 }
@@ -149,6 +124,73 @@ func MetricsMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 		err := db.WriteMetric(database, metric)
 		if err != nil {
 			LogError(err, c)
+		}
+
+		return next(c)
+	}
+}
+
+var informedOfBan = map[int64]bool{}
+var informedOfBanLock = sync.Mutex{}
+
+func BanMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
+	return func(c tele.Context) error {
+		user := c.Get("user").(*db.User)
+		database := c.Get("database").(*sql.DB)
+
+		if user.BannedUntil.After(time.Now()) {
+			informedOfBanLock.Lock()
+			if informedOfBan[user.Id] {
+				return nil
+			}
+			informedOfBan[user.Id] = true
+			informedOfBanLock.Unlock()
+
+			return c.Send("Вас було заблоковано до " + user.BannedUntil.Format("02.01.2006 15:04:05"))
+		}
+
+		messagesLastMinute := int64(0)
+		row := database.QueryRow(`SELECT count(id) FROM metrics WHERE user_id = ? AND created_at > strftime('%s', 'now') - 60`, user.Id)
+		err := row.Scan(&messagesLastMinute)
+
+		if err != nil {
+			return err
+		}
+
+		if messagesLastMinute > 10 {
+			user.BannedUntil = time.Now().Add(time.Minute * 15)
+			err = user.Save()
+
+			if err != nil {
+				return err
+			}
+		}
+
+		return next(c)
+	}
+}
+
+func KeyboardMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
+	return func(c tele.Context) error {
+		user := c.Get("user").(*db.User)
+
+		if user.KeyboardVersion != consts.KeyboardVersion {
+			keyboard := GetReplyKeyboard()
+
+			_, err := c.Bot().Send(c.Recipient(), "Оновлено клавіатуру", &tele.ReplyMarkup{
+				ReplyKeyboard:  keyboard,
+				ResizeKeyboard: true,
+			})
+			if err != nil {
+				return err
+			}
+
+			user.KeyboardVersion = consts.KeyboardVersion
+
+			err = user.Save()
+			if err != nil {
+				return err
+			}
 		}
 
 		return next(c)
