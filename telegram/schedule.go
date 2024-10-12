@@ -90,7 +90,7 @@ func GetDayMarkup(c tele.Context, date string, messageIdsToDelete []string) *tel
 		InlineKeyboard: [][]tele.InlineButton{
 			{
 				{Text: "⏪", Data: "update:" + current.AddDate(0, 0, -1).Format("02.01.2006") + msgsToDelete + ";prev"},
-				{Text: "Сьогодні", Data: "update:" + time.Now().Format("02.01.2006") + msgsToDelete + ";today"},
+				{Text: "Сьогодні", Data: "update:" + "today" + msgsToDelete + ";today"},
 				{Text: "⏩", Data: "update:" + current.AddDate(0, 0, 1).Format("02.01.2006") + msgsToDelete + ";next"},
 			},
 			{{Text: "Оновити", Data: "update:" + date + msgsToDelete}},

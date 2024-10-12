@@ -90,9 +90,13 @@ func CallbackData(c tele.Context) error {
 				_, err := Ask(c)
 				return err
 			}
-			date, err := time.Parse("02.01.2006", value)
-			if err != nil {
-				return err
+			date := time.Now()
+			if value != "today" {
+				var err error
+				date, err = time.Parse("02.01.2006", value)
+				if err != nil {
+					return err
+				}
 			}
 
 			if value2 != "" {
@@ -109,7 +113,7 @@ func CallbackData(c tele.Context) error {
 				}
 			}
 
-			err = SendSchedule(c, c.Message(), true, FormatDay, date, date)
+			err := SendSchedule(c, c.Message(), true, FormatDay, date, date)
 			if err != nil {
 				return err
 			}
