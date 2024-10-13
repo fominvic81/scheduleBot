@@ -23,11 +23,11 @@ func NextNext(c tele.Context) error {
 }
 
 func Week(c tele.Context) error {
-	return SendScheduleWithOptions(c, true, FormatDay, 7, 0, true)
+	return SendScheduleWithOptions(c, false, FormatDay, 7, 0, true)
 }
 
 func NextWeek(c tele.Context) error {
-	return SendScheduleWithOptions(c, true, FormatDay, 7, 7, true)
+	return SendScheduleWithOptions(c, false, FormatDay, 7, 7, true)
 }
 
 func Short(c tele.Context) error {
@@ -80,7 +80,7 @@ func Subject(c tele.Context) error {
 }
 
 func SendSubject(c tele.Context, discipline string) error {
-	return SendScheduleWithOptions(c, true, func(c tele.Context, day *api.Day) []string {
+	return SendScheduleWithOptions(c, true, func(c tele.Context, day *api.Day, withGroups bool) []string {
 		day2 := api.Day{
 			WeekDay: day.WeekDay,
 			Date:    day.Date,
@@ -91,6 +91,6 @@ func SendSubject(c tele.Context, discipline string) error {
 				day2.Classes = append(day2.Classes, class)
 			}
 		}
-		return FormatDay(c, &day2)
+		return FormatDay(c, &day2, withGroups)
 	}, 21, 0, true)
 }

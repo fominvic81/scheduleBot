@@ -101,7 +101,7 @@ func GetDayMarkup(c tele.Context, date string, messageIdsToDelete []string) *tel
 var msgLastModMu = sync.Mutex{}
 var msgLastMod = map[string]int{}
 
-func SendSchedule(c tele.Context, message *tele.Message, withGroups bool, formatter func(c tele.Context, day *api.Day) []string, start time.Time, end time.Time) error {
+func SendSchedule(c tele.Context, message *tele.Message, withGroups bool, formatter Formatter, start time.Time, end time.Time) error {
 	asked, err := Ask(c)
 	if err != nil || asked {
 		return err
@@ -136,7 +136,7 @@ func SendSchedule(c tele.Context, message *tele.Message, withGroups bool, format
 	}
 
 	for i, day := range schedule {
-		texts := formatter(c, &day)
+		texts := formatter(c, &day, withGroups)
 
 		messageIdsToDelete := []string{}
 		var msg *tele.Message
@@ -178,7 +178,7 @@ func SendSchedule(c tele.Context, message *tele.Message, withGroups bool, format
 
 		if current == count {
 			for _, day := range schedule {
-				texts := formatter(c, &day)
+				texts := formatter(c, &day, withGroups)
 				messageIdsToDelete := []string{}
 
 				for i, text := range texts {
@@ -217,7 +217,7 @@ func SendSchedule(c tele.Context, message *tele.Message, withGroups bool, format
 	return nil
 }
 
-func SendScheduleWithOptions(c tele.Context, withGroups bool, formatter func(c tele.Context, day *api.Day) []string, days int, offset int, startFromMonday bool) error {
+func SendScheduleWithOptions(c tele.Context, withGroups bool, formatter Formatter, days int, offset int, startFromMonday bool) error {
 	asked, err := Ask(c)
 	if err != nil || asked {
 		return err

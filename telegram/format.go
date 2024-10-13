@@ -11,12 +11,14 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
+type Formatter func(c tele.Context, day *api.Day, withGroups bool) []string
+
 func Escape(msg string) string {
 	r, _ := regexp.Compile("([\\*\\_\\~\\|\\[\\]\\(\\)\\>\\-\\!\\.\\`])")
 	return r.ReplaceAllString(msg, "\\$1")
 }
 
-func FormatDay(c tele.Context, day *api.Day) []string {
+func FormatDay(c tele.Context, day *api.Day, withGroups bool) []string {
 	user := c.Get("user").(*db.User)
 
 	messages := []string{}
@@ -35,7 +37,7 @@ func FormatDay(c tele.Context, day *api.Day) []string {
 		}
 		classMessage += fmt.Sprintf("Тип: \\[*%s*\\] Кабінет: \\[*%s*\\]\n", Escape(class.Type), Escape(class.Cabinet))
 
-		if user.Settings.ShowGroups != 0 {
+		if user.Settings.ShowGroups != 0 && withGroups {
 			if class.Groups != "" {
 				groups := class.Groups
 				if len(groups) > 90 && user.Settings.ShowGroups == 1 {
@@ -69,7 +71,7 @@ func FormatDay(c tele.Context, day *api.Day) []string {
 	return messages
 }
 
-func FormatDayShort(_ tele.Context, day *api.Day) []string {
+func FormatDayShort(_ tele.Context, day *api.Day, _ bool) []string {
 	r, _ := regexp.Compile(`\d*`)
 
 	message := fmt.Sprintf("%s, %s\n\n", Escape(day.WeekDay), Escape(day.Date))
