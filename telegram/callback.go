@@ -20,6 +20,19 @@ func boolToInt(a bool) int {
 	return 0
 }
 
+func DeleteMessage(c tele.Context) error {
+	err := c.Delete()
+	if err == tele.ErrNotFoundToDelete {
+		LogError(err, c)
+		return nil
+	} else if err == tele.ErrNoRightsToDelete {
+		err := c.Edit("Видалено")
+		return err
+	} else {
+		return err
+	}
+}
+
 func CallbackData(c tele.Context) error {
 	user := c.Get("user").(*db.User)
 
@@ -42,7 +55,7 @@ func CallbackData(c tele.Context) error {
 			if err != nil {
 				return err
 			}
-			err = c.Delete()
+			err = DeleteMessage(c)
 			if err != nil {
 				return err
 			}
@@ -52,7 +65,7 @@ func CallbackData(c tele.Context) error {
 			if err != nil {
 				return err
 			}
-			err = c.Delete()
+			err = DeleteMessage(c)
 			if err != nil {
 				return err
 			}
@@ -62,7 +75,7 @@ func CallbackData(c tele.Context) error {
 			if err != nil {
 				return err
 			}
-			err = c.Delete()
+			err = DeleteMessage(c)
 			if err != nil {
 				return err
 			}
@@ -72,7 +85,7 @@ func CallbackData(c tele.Context) error {
 			if err != nil {
 				return err
 			}
-			err = c.Delete()
+			err = DeleteMessage(c)
 			if err != nil {
 				return err
 			}
@@ -81,7 +94,7 @@ func CallbackData(c tele.Context) error {
 			if err != nil {
 				return err
 			}
-			err = c.Delete()
+			err = DeleteMessage(c)
 			if err != nil {
 				return err
 			}
@@ -254,7 +267,7 @@ func CallbackData(c tele.Context) error {
 				err = nil
 			}
 		case "delete":
-			err := c.Delete()
+			err := DeleteMessage(c)
 			if err != nil {
 				return err
 			}
