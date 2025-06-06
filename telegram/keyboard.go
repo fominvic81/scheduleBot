@@ -9,26 +9,48 @@ type KeyboardButton struct {
 
 type Keyboard [][]KeyboardButton
 
-func GetKeyboard() Keyboard {
-	return Keyboard{
+const (
+	KeyboardMain = iota
+	KeyboardOther
+)
+
+func GetKeyboards() []Keyboard {
+	return []Keyboard{
 		{
-			{Text: "Cьогодні", Handler: Day},
-			{Text: "Завтра", Handler: Next},
-			{Text: "Післязавтра", Handler: NextNext},
+			{
+				{Text: "Cьогодні", Handler: DayHandler},
+				{Text: "Завтра", Handler: NextHandler},
+				{Text: "Післязавтра", Handler: NextNextHandler},
+			},
+			{
+				{Text: "Тиждень", Handler: WeekHandler},
+				{Text: "Наступний тиждень", Handler: NextWeekHandler},
+			},
+			{
+				{Text: "Інше", Handler: OtherHandler},
+			},
 		},
 		{
-			{Text: "Тиждень", Handler: Week},
-			{Text: "Наступний тиждень", Handler: NextWeek},
-		},
-		{
-			{Text: "Стисло(два тижні)", Handler: Short},
-			{Text: "Знайти предмет", Handler: Subject},
+			{
+				{Text: "Стисло(два тижні)", Handler: ShortHandler},
+				{Text: "Знайти предмет", Handler: SubjectHandler},
+			},
+			{
+				{Text: "Змінити групу", Handler: SetGroupHandler},
+				{Text: "Змінити факультет і групу", Handler: SetDataHandler},
+			},
+			{
+				{Text: "Налаштування", Handler: SettingsHandler},
+			},
+			{
+				{Text: "Головна", Handler: MainHandler},
+			},
 		},
 	}
 }
 
-func GetReplyKeyboard() [][]tele.ReplyButton {
-	keyboard := GetKeyboard()
+func GetReplyKeyboard(keyboardIndex int) [][]tele.ReplyButton {
+	keyboard := GetKeyboards()[keyboardIndex]
 	replyKeyboard := make([][]tele.ReplyButton, len(keyboard))
 
 	for i, row := range keyboard {

@@ -175,7 +175,7 @@ func KeyboardMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 		user := c.Get("user").(*db.User)
 
 		if user.KeyboardVersion != consts.KeyboardVersion {
-			keyboard := GetReplyKeyboard()
+			keyboard := GetReplyKeyboard(KeyboardMain)
 
 			_, err := c.Bot().Send(c.Recipient(), "Оновлено клавіатуру", &tele.ReplyMarkup{
 				ReplyKeyboard:  keyboard,

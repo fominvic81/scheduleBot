@@ -16,20 +16,20 @@ func GetCommands() []Command {
 	return []Command{
 		{Text: "start", Description: "Старт", Handler: Start},
 
-		{Text: "day", Description: "Розклад на сьогодні", Handler: Day},
-		{Text: "next", Description: "Розклад на завтра", Handler: Next},
-		{Text: "nextnext", Description: "Розклад на післязавтра", Handler: NextNext},
+		{Text: "day", Description: "Розклад на сьогодні", Handler: DayHandler},
+		{Text: "next", Description: "Розклад на завтра", Handler: NextHandler},
+		{Text: "nextnext", Description: "Розклад на післязавтра", Handler: NextNextHandler},
 
-		{Text: "week", Description: "Розклад на тиждень", Handler: Week},
-		{Text: "nextweek", Description: "Розклад на наступний тиждень", Handler: NextWeek},
+		{Text: "week", Description: "Розклад на тиждень", Handler: WeekHandler},
+		{Text: "nextweek", Description: "Розклад на наступний тиждень", Handler: NextWeekHandler},
 
-		{Text: "short", Description: "Стисло(два тижні)", Handler: Short},
-		{Text: "subject", Description: "Знайти предмет", Handler: Subject},
+		{Text: "short", Description: "Стисло(два тижні)", Handler: ShortHandler},
+		{Text: "subject", Description: "Знайти предмет", Handler: SubjectHandler},
 
-		{Text: "setgroup", Description: "Змінити групу", Handler: SetGroup},
-		{Text: "setdata", Description: "Змінити дані", Handler: SetData},
+		{Text: "setgroup", Description: "Змінити групу", Handler: SetGroupHandler},
+		{Text: "setdata", Description: "Змінити факультет і групу", Handler: SetDataHandler},
 
-		{Text: "settings", Description: "Налаштування", Handler: Settings},
+		{Text: "settings", Description: "Налаштування", Handler: SettingsHandler},
 	}
 }
 

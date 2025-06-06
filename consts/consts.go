@@ -1,6 +1,6 @@
 package consts
 
-var KeyboardVersion int64 = 4
+var KeyboardVersion int64 = 5
 
 var WeekDays = []string{
 	"Неділя",

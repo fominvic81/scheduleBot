@@ -6,7 +6,7 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-func SetGroup(c tele.Context) error {
+func SetGroupHandler(c tele.Context) error {
 	user := c.Get("user").(*db.User)
 
 	user.StudyGroup = nil

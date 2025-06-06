@@ -2,7 +2,7 @@ package telegram
 
 import tele "gopkg.in/telebot.v3"
 
-func Settings(c tele.Context) error {
+func SettingsHandler(c tele.Context) error {
 	return c.Send("Налаштування", &tele.ReplyMarkup{
 		InlineKeyboard: [][]tele.InlineButton{
 			{tele.InlineButton{Text: "Формат розкладу", Data: "settings/format"}},

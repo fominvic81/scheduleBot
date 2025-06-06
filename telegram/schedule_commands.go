@@ -10,27 +10,27 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-func Day(c tele.Context) error {
+func DayHandler(c tele.Context) error {
 	return SendScheduleWithOptions(c, true, FormatDay, 1, 0, false)
 }
 
-func Next(c tele.Context) error {
+func NextHandler(c tele.Context) error {
 	return SendScheduleWithOptions(c, true, FormatDay, 1, 1, false)
 }
 
-func NextNext(c tele.Context) error {
+func NextNextHandler(c tele.Context) error {
 	return SendScheduleWithOptions(c, true, FormatDay, 1, 2, false)
 }
 
-func Week(c tele.Context) error {
+func WeekHandler(c tele.Context) error {
 	return SendScheduleWithOptions(c, false, FormatDay, 7, 0, true)
 }
 
-func NextWeek(c tele.Context) error {
+func NextWeekHandler(c tele.Context) error {
 	return SendScheduleWithOptions(c, false, FormatDay, 7, 7, true)
 }
 
-func Short(c tele.Context) error {
+func ShortHandler(c tele.Context) error {
 	return SendScheduleWithOptions(c, false, FormatDayShort, 21, 0, true)
 }
 
@@ -41,7 +41,7 @@ func hash(str string) string {
 	return fmt.Sprintf("%x", hasher.Sum64())
 }
 
-func Subject(c tele.Context) error {
+func SubjectHandler(c tele.Context) error {
 	asked, err := Ask(c)
 	if err != nil || asked {
 		return err

@@ -6,7 +6,7 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-func SetData(c tele.Context) error {
+func SetDataHandler(c tele.Context) error {
 	user := c.Get("user").(*db.User)
 
 	user.Faculty = nil
