@@ -6,3 +6,4 @@ tmp
 logs.txt
 scheduleBot
 .idea
+dist/
