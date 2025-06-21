@@ -14,7 +14,7 @@ type Command struct {
 
 func GetCommands() []Command {
 	return []Command{
-		{Text: "start", Description: "Старт", Handler: Start},
+		{Text: "start", Description: "Старт", Handler: StartHandler},
 
 		{Text: "day", Description: "Розклад на сьогодні", Handler: DayHandler},
 		{Text: "next", Description: "Розклад на завтра", Handler: NextHandler},
@@ -26,8 +26,9 @@ func GetCommands() []Command {
 		{Text: "short", Description: "Стисло(два тижні)", Handler: ShortHandler},
 		{Text: "subject", Description: "Знайти предмет", Handler: SubjectHandler},
 
-		{Text: "setgroup", Description: "Змінити групу", Handler: SetGroupHandler},
-		{Text: "setdata", Description: "Змінити факультет і групу", Handler: SetDataHandler},
+		{Text: "setgroup", Description: "Змінити групу", Handler: AskGroup},
+		{Text: "setdata", Description: "Змінити факультет і групу", Handler: AskFaculty},
+		{Text: "teacher", Description: "Знайти викладача", Handler: SetSearchTeacherHandler},
 
 		{Text: "settings", Description: "Налаштування", Handler: SettingsHandler},
 	}

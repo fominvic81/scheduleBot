@@ -36,14 +36,13 @@ func GetKeyboards() []Keyboard {
 				{Text: "Знайти предмет", Handler: SubjectHandler},
 			},
 			{
-				{Text: "Змінити групу", Handler: SetGroupHandler},
-				{Text: "Змінити факультет і групу", Handler: SetDataHandler},
-			},
-			{
-				{Text: "Налаштування", Handler: SettingsHandler},
+				{Text: "Змінити групу", Handler: AskGroup},
+				{Text: "Змінити факультет і групу", Handler: AskFaculty},
+				{Text: "Знайти викладача", Handler: SetSearchTeacherHandler},
 			},
 			{
 				{Text: "Головна", Handler: MainHandler},
+				{Text: "Налаштування", Handler: SettingsHandler},
 			},
 		},
 	}

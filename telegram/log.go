@@ -36,6 +36,9 @@ func LogAction(c tele.Context) {
 }
 
 func LogError(err error, c tele.Context) {
+	if err == nil {
+		return
+	}
 	errorText := ""
 
 	sender := c.Sender()

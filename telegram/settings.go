@@ -7,7 +7,7 @@ func SettingsHandler(c tele.Context) error {
 		InlineKeyboard: [][]tele.InlineButton{
 			{tele.InlineButton{Text: "Формат розкладу", Data: "settings/format"}},
 			{tele.InlineButton{Text: "Фільтрація дисциплін", Data: "settings/disciplines"}},
-			{tele.InlineButton{Text: "Закрити", Data: "delete"}},
+			{tele.InlineButton{Text: "Закрити ❌", Data: "delete"}},
 		},
 	})
 }

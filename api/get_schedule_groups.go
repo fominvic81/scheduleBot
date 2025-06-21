@@ -10,17 +10,21 @@ import (
 func GetScheduleGroups(schedule []Day, startDate time.Time, endDate time.Time) error {
 	employees := make([]KeyValue, 0, 6)
 
+	var errs error = nil
+
 	for _, day := range schedule {
 		for _, class := range day.Classes {
 			if len(class.Employee) == 0 {
 				continue
 			}
-			employee, err := GetEmployeeByName(class.Employee)
+			employee, success, err := GetEmployeeByName(class.Employee)
 			if err != nil {
-				return err
+				errs = errors.Join(errs, err)
 			}
-			if !slices.Contains(employees, employee) {
-				employees = append(employees, employee)
+			if success {
+				if !slices.Contains(employees, employee) {
+					employees = append(employees, employee)
+				}
 			}
 		}
 	}
@@ -28,29 +32,25 @@ func GetScheduleGroups(schedule []Day, startDate time.Time, endDate time.Time) e
 	scheduleByEmployee := make(map[string][]Day)
 	wg := sync.WaitGroup{}
 	mu := sync.Mutex{}
-	var goerr error = nil
 
-	// TODO: If error stop immediately
 	for _, employee := range employees {
 		wg.Add(1)
 
 		go func() {
+			defer wg.Done()
+
 			schedule, err := GetEmployeeSchedule(employee, startDate, endDate)
 
 			mu.Lock()
+			defer mu.Unlock()
+
 			if err != nil {
-				goerr = err
+				errs = errors.Join(errs, err)
 			}
 			scheduleByEmployee[employee.Value] = schedule
-			mu.Unlock()
-			wg.Done()
 		}()
 	}
 	wg.Wait()
-
-	if goerr != nil {
-		return goerr
-	}
 
 	for i := range schedule {
 		for j := range schedule[i].Classes {
@@ -62,7 +62,8 @@ func GetScheduleGroups(schedule []Day, startDate time.Time, endDate time.Time) e
 			}
 			employeeSchedule, ok := scheduleByEmployee[employee]
 			if !ok {
-				return errors.New("failed to get schedule by employee name: " + employee)
+				errs = errors.Join(errors.New("failed to get schedule by employee name: " + employee))
+				continue
 			}
 			for _, day := range employeeSchedule {
 				for _, employeeClass := range day.Classes {
@@ -74,5 +75,5 @@ func GetScheduleGroups(schedule []Day, startDate time.Time, endDate time.Time) e
 		}
 	}
 
-	return nil
+	return errs
 }

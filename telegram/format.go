@@ -32,7 +32,7 @@ func FormatDay(c tele.Context, day *api.Day, withGroups bool) []string {
 		classMessage := ""
 		classMessage += fmt.Sprintf("⚪ *%s*, \\[%s\\-%s\\]\n", Escape(class.StudyTime), Escape(class.Begin), Escape(class.End))
 		classMessage += fmt.Sprintf("Предмет: %s\n", Escape(class.Discipline))
-		if user.Settings.ShowTeacher {
+		if user.Settings.ShowTeacher && class.Employee != "" {
 			classMessage += fmt.Sprintf("Викладач: %s\n", Escape(class.Employee))
 		}
 		classMessage += fmt.Sprintf("Тип: \\[*%s*\\] Кабінет: \\[*%s*\\]\n", Escape(class.Type), Escape(class.Cabinet))

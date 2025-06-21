@@ -6,10 +6,17 @@ import (
 	"time"
 )
 
+const (
+	UserStateNone = iota
+	UserStateSearchGroup
+	UserStateSearchTeacher
+)
+
 type User struct {
 	db              *sql.DB
 	Id              int64
 	Messages        int64
+	State           int64
 	Firstname       string
 	Lastname        *string
 	Username        *string
@@ -28,6 +35,7 @@ func (user *User) scan(scanner interface{ Scan(src ...any) error }) error {
 	err := scanner.Scan(
 		&user.Id,
 		&user.Messages,
+		&user.State,
 		&user.Firstname,
 		&user.Lastname,
 		&user.Username,
@@ -44,13 +52,43 @@ func (user *User) scan(scanner interface{ Scan(src ...any) error }) error {
 }
 
 func GetOrCreateUser(db *sql.DB, id int64, firstname string) (*User, error) {
-	row := db.QueryRow("SELECT * FROM users WHERE id = ?", id)
+	row := db.QueryRow(`SELECT 
+		id,
+		messages,
+		state,
+		firstname,
+		lastname,
+		username,
+		faculty,
+		educationForm,
+		course,
+		studyGroup,
+		isAdmin,
+		keyboardVersion,
+		banned_until
+	FROM users WHERE id = ?`, id)
+
 	user := User{db: db}
 
 	err := user.scan(row)
 
 	if errors.Is(err, sql.ErrNoRows) {
-		row = user.db.QueryRow("INSERT INTO users (id, firstname) VALUES (?, ?) RETURNING *",
+		row = user.db.QueryRow(`
+			INSERT INTO users (id, firstname) VALUES (?, ?) RETURNING
+				id,
+				messages,
+				state,
+				firstname,
+				lastname,
+				username,
+				faculty,
+				educationForm,
+				course,
+				studyGroup,
+				isAdmin,
+				keyboardVersion,
+				banned_until
+			`,
 			id,
 			firstname,
 		)
@@ -73,6 +111,7 @@ func GetOrCreateUser(db *sql.DB, id int64, firstname string) (*User, error) {
 func (user *User) Save() error {
 	row := user.db.QueryRow(`UPDATE users SET
 			messages = ?,
+			state = ?,
 			firstname = ?,
 			lastname = ?,
 			username = ?,
@@ -83,8 +122,23 @@ func (user *User) Save() error {
 			isAdmin = ?,
 			keyboardVersion = ?,
 			banned_until = ?
-		WHERE id = ? RETURNING *`,
+		WHERE id = ? RETURNING
+			id,
+			messages,
+			state,
+			firstname,
+			lastname,
+			username,
+			faculty,
+			educationForm,
+			course,
+			studyGroup,
+			isAdmin,
+			keyboardVersion,
+			banned_until
+		`,
 		user.Messages,
+		user.State,
 		user.Firstname,
 		user.Lastname,
 		user.Username,
@@ -108,7 +162,22 @@ func (user *User) Save() error {
 }
 
 func GetAdminUsers(db *sql.DB) ([]User, error) {
-	rows, err := db.Query("SELECT * FROM users WHERE isAdmin = TRUE")
+	rows, err := db.Query(`SELECT 
+		id,
+		messages,
+		state,
+		firstname,
+		lastname,
+		username,
+		faculty,
+		educationForm,
+		course,
+		studyGroup,
+		isAdmin,
+		keyboardVersion,
+		banned_until
+ 	FROM users WHERE isAdmin = TRUE`)
+
 	if err != nil {
 		return nil, err
 	}

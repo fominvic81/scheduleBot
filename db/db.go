@@ -118,5 +118,10 @@ func Init() (*sql.DB, error) {
 		return nil, err
 	}
 
+	err = createColumnIfNotExists(db, "users", "state", "INTEGER NOT NULL DEFAULT 0")
+	if err != nil {
+		return nil, err
+	}
+
 	return db, nil
 }

@@ -5,10 +5,20 @@ import (
 	"log"
 	"time"
 
+	"github.com/fominvic81/scheduleBot/api"
 	tele "gopkg.in/telebot.v3"
 )
 
-func SetCommands(b *tele.Bot) {
+func preload() {
+	if _, _, err := api.GetAllEmployeesAndChairs(); err != nil {
+		log.Println(err)
+	}
+	if _, _, err := api.GetAllGroups(); err != nil {
+		log.Println(err)
+	}
+}
+
+func setCommands(b *tele.Bot) {
 	commands := GetCommands()
 
 	teleCommands := make([]tele.Command, 0, len(commands))
@@ -25,6 +35,8 @@ func SetCommands(b *tele.Bot) {
 }
 
 func Init(token string, database *sql.DB) {
+	go preload()
+
 	pref := tele.Settings{
 		Token:   token,
 		Poller:  &tele.LongPoller{Timeout: 10 * time.Second},
@@ -36,7 +48,7 @@ func Init(token string, database *sql.DB) {
 		log.Fatal(err)
 		return
 	}
-	SetCommands(b)
+	setCommands(b)
 
 	b.Use(func(next tele.HandlerFunc) tele.HandlerFunc {
 		return func(c tele.Context) error {
@@ -56,8 +68,8 @@ func Init(token string, database *sql.DB) {
 		b.Handle("/"+command.Text, command.Handler)
 	}
 
-	b.Handle(tele.OnText, HandleText)
-	b.Handle(tele.OnCallback, CallbackData)
+	b.Handle(tele.OnText, TextHandler)
+	b.Handle(tele.OnCallback, CallbackDataHandler)
 
 	// Fix middlewares not being called if there are no matching handlers
 	b.Handle(tele.OnMedia, func(ctx tele.Context) error {

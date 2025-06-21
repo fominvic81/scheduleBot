@@ -42,9 +42,8 @@ func UserMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 		user.Lastname = EmptyStrAsNil(sender.LastName)
 		user.Username = EmptyStrAsNil(sender.Username)
 		user.Messages += 1
-		err = user.Save()
 
-		if err != nil {
+		if err = user.Save(); err != nil {
 			return err
 		}
 
@@ -121,8 +120,7 @@ func MetricsMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 
 		database := c.Get("database").(*sql.DB)
 
-		err := db.WriteMetric(database, metric)
-		if err != nil {
+		if err := db.WriteMetric(database, metric); err != nil {
 			LogError(err, c)
 		}
 
@@ -151,17 +149,15 @@ func BanMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 
 		messagesLastMinute := int64(0)
 		row := database.QueryRow(`SELECT count(id) FROM metrics WHERE user_id = ? AND created_at > strftime('%s', 'now') - 60`, user.Id)
-		err := row.Scan(&messagesLastMinute)
 
-		if err != nil {
+		if err := row.Scan(&messagesLastMinute); err != nil {
 			return err
 		}
 
 		if messagesLastMinute > 10 {
 			user.BannedUntil = time.Now().Add(time.Minute * 15)
-			err = user.Save()
 
-			if err != nil {
+			if err := user.Save(); err != nil {
 				return err
 			}
 		}
@@ -172,27 +168,26 @@ func BanMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 
 func KeyboardMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 	return func(c tele.Context) error {
+		if err := next(c); err != nil {
+			return err
+		}
+
 		user := c.Get("user").(*db.User)
 
-		if user.KeyboardVersion != consts.KeyboardVersion {
+		if user.KeyboardVersion != consts.KeyboardVersion && user.StudyGroup != nil {
 			keyboard := GetReplyKeyboard(KeyboardMain)
+			markup := tele.ReplyMarkup{ReplyKeyboard: keyboard, ResizeKeyboard: true}
 
-			_, err := c.Bot().Send(c.Recipient(), "Оновлено клавіатуру", &tele.ReplyMarkup{
-				ReplyKeyboard:  keyboard,
-				ResizeKeyboard: true,
-			})
-			if err != nil {
+			if _, err := c.Bot().Send(c.Recipient(), "Оновлено клавіатуру", &markup); err != nil {
 				return err
 			}
 
 			user.KeyboardVersion = consts.KeyboardVersion
-
-			err = user.Save()
-			if err != nil {
+			if err := user.Save(); err != nil {
 				return err
 			}
 		}
 
-		return next(c)
+		return nil
 	}
 }

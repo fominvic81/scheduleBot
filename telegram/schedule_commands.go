@@ -6,6 +6,7 @@ import (
 	"slices"
 
 	"github.com/fominvic81/scheduleBot/api"
+	"github.com/fominvic81/scheduleBot/db"
 
 	tele "gopkg.in/telebot.v3"
 )
@@ -42,9 +43,12 @@ func hash(str string) string {
 }
 
 func SubjectHandler(c tele.Context) error {
-	asked, err := Ask(c)
-	if err != nil || asked {
-		return err
+	user := c.Get("user").(*db.User)
+	if user.StudyGroup == nil {
+		if err := AskGroup(c); err != nil {
+			return err
+		}
+		return nil
 	}
 
 	start, end := GetDateRange(21, 0, true)

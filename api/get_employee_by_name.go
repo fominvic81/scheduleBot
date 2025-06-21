@@ -2,17 +2,17 @@ package api
 
 import "errors"
 
-func GetEmployeeByName(name string) (KeyValue, error) {
-	employeesAndChairs, err := GetAllEmployeesAndChairs()
-	if err != nil {
-		return KeyValue{}, err
+func GetEmployeeByName(name string) (KeyValue, bool, error) {
+	employeesAndChairs, success, err := GetAllEmployeesAndChairs()
+	if !success {
+		return KeyValue{}, false, err
 	}
 	employees := employeesAndChairs.Employees
 
 	for _, employee := range employees {
 		if employee.Value == name {
-			return employee, nil
+			return employee, true, err
 		}
 	}
-	return KeyValue{}, errors.New("failed to find employee: " + name)
+	return KeyValue{}, false, errors.New("failed to find employee: " + name)
 }

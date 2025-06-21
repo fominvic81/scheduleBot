@@ -93,7 +93,32 @@ func GetDayMarkup(c tele.Context, date string, messageIdsToDelete []string) *tel
 				{Text: "Сьогодні", Data: "update:" + "today" + msgsToDelete + ";today"},
 				{Text: "⏩", Data: "update:" + current.AddDate(0, 0, 1).Format("02.01.2006") + msgsToDelete + ";next"},
 			},
-			{{Text: "Оновити", Data: "update:" + date + msgsToDelete}},
+			{{Text: "Оновити 🔄", Data: "update:" + date + msgsToDelete}},
+		},
+	}
+}
+
+func GetTeacherDayMarkup(c tele.Context, employee string, date string, messageIdsToDelete []string) *tele.ReplyMarkup {
+	current, err := time.Parse("02.01.2006", date)
+
+	if err != nil {
+		LogError(err, c)
+		return &tele.ReplyMarkup{}
+	}
+
+	msgsToDelete := ""
+	if len(messageIdsToDelete) > 0 {
+		msgsToDelete = "|" + strings.Join(messageIdsToDelete, ",")
+	}
+
+	return &tele.ReplyMarkup{
+		InlineKeyboard: [][]tele.InlineButton{
+			{
+				{Text: "⏪", Data: "update-teacher:" + employee + "|" + current.AddDate(0, 0, -1).Format("02.01.2006") + msgsToDelete + ";prev"},
+				{Text: "Сьогодні", Data: "update-teacher:" + employee + "|" + "today" + msgsToDelete + ";today"},
+				{Text: "⏩", Data: "update-teacher:" + employee + "|" + current.AddDate(0, 0, 1).Format("02.01.2006") + msgsToDelete + ";next"},
+			},
+			{{Text: "Оновити 🔄", Data: "update-teacher:" + employee + "|" + date + msgsToDelete}},
 		},
 	}
 }
@@ -102,9 +127,11 @@ var msgLastModMu = sync.Mutex{}
 var msgLastMod = map[string]int{}
 
 func SendSchedule(c tele.Context, message *tele.Message, withGroups bool, formatter Formatter, start time.Time, end time.Time) error {
-	asked, err := Ask(c)
-	if err != nil || asked {
-		return err
+	user := c.Get("user").(*db.User)
+	if user.StudyGroup == nil {
+		if err := AskGroup(c); err != nil {
+			return err
+		}
 	}
 
 	schedule, err := GetSchedule(c, start, end, true)
@@ -218,9 +245,12 @@ func SendSchedule(c tele.Context, message *tele.Message, withGroups bool, format
 }
 
 func SendScheduleWithOptions(c tele.Context, withGroups bool, formatter Formatter, days int, offset int, startFromMonday bool) error {
-	asked, err := Ask(c)
-	if err != nil || asked {
-		return err
+	user := c.Get("user").(*db.User)
+	if user.StudyGroup == nil {
+		if err := AskGroup(c); err != nil {
+			return err
+		}
+		return nil
 	}
 
 	start, end := GetDateRange(days, offset, startFromMonday)
