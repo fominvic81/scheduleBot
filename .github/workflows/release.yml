@@ -56,8 +56,8 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: dist/scheduleBot_linux_amd64_v1/scheduleBot
-          target: scheduleBot/scheduleBot
+          source: dist/*
+          target: scheduleBot
       - name: Restart service
         uses: appleboy/ssh-action@v1
         with:
