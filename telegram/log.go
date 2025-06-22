@@ -35,7 +35,7 @@ func LogAction(c tele.Context) {
 	log.Println(text)
 }
 
-func LogError(err error, c tele.Context) {
+func LogError(c tele.Context, err error) {
 	if err == nil {
 		return
 	}
@@ -49,13 +49,16 @@ func LogError(err error, c tele.Context) {
 	}
 
 	log.Println(errorText)
+	Report(c, errorText)
+}
 
+func Report(c tele.Context, text string) {
 	admins, err2 := db.GetAdminUsers(c.Get("database").(*sql.DB))
 	if err2 != nil {
 		log.Println(err2)
 	} else {
 		for _, admin := range admins {
-			_, _ = c.Bot().Send(tele.ChatID(admin.Id), errorText)
+			_, _ = c.Bot().Send(tele.ChatID(admin.Id), text)
 		}
 	}
 }

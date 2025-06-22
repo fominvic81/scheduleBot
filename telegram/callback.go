@@ -26,7 +26,7 @@ func boolToInt(a bool) int {
 func DeleteMessage(c tele.Context) error {
 	err := c.Delete()
 	if errors.Is(err, tele.ErrNotFoundToDelete) {
-		LogError(err, c)
+		LogError(c, err)
 	} else if errors.Is(err, tele.ErrNoRightsToDelete) {
 		if err := c.Edit("Видалено"); err != nil {
 			return err
@@ -93,7 +93,7 @@ func CallbackDataHandler(c tele.Context) error {
 			if !success {
 				return err
 			}
-			LogError(err, c)
+			LogError(c, err)
 
 			user.StudyGroup = &value
 			for _, group := range groups {
@@ -141,7 +141,7 @@ func CallbackDataHandler(c tele.Context) error {
 					}
 
 					if err := c.Bot().Delete(msg); err != nil {
-						LogError(err, c)
+						LogError(c, err)
 					}
 				}
 			}
@@ -314,7 +314,7 @@ func CallbackDataHandler(c tele.Context) error {
 					}
 
 					if err := c.Bot().Delete(msg); err != nil {
-						LogError(err, c)
+						LogError(c, err)
 					}
 				}
 			}
@@ -359,7 +359,7 @@ func CallbackDataHandler(c tele.Context) error {
 		case "-":
 			//
 		default:
-			LogError(fmt.Errorf("unknown query callback %v", c.Data()), c)
+			LogError(c, fmt.Errorf("unknown query callback %v", c.Data()))
 		}
 
 		if err := user.Save(); err != nil {

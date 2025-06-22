@@ -18,7 +18,7 @@ func SearchGroupHandler(c tele.Context) error {
 	if !success {
 		return err
 	}
-	LogError(err, c)
+	LogError(c, err)
 
 	results := []api.Group{}
 	exactResults := []api.Group{}
@@ -113,7 +113,7 @@ func SearchTeacherHandler(c tele.Context) error {
 	if !success {
 		return err
 	}
-	LogError(err, c)
+	LogError(c, err)
 
 	results := []api.KeyValue{}
 

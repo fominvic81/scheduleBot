@@ -69,7 +69,7 @@ func GetSchedule(c tele.Context, start time.Time, end time.Time, filter bool) ([
 func GetScheduleGroups(c tele.Context, schedule []api.Day, start time.Time, end time.Time) {
 	err := api.GetScheduleGroups(schedule, start, end)
 	if err != nil {
-		LogError(err, c)
+		LogError(c, err)
 	}
 }
 
@@ -77,7 +77,7 @@ func GetDayMarkup(c tele.Context, date string, messageIdsToDelete []string) *tel
 	current, err := time.Parse("02.01.2006", date)
 
 	if err != nil {
-		LogError(err, c)
+		LogError(c, err)
 		return &tele.ReplyMarkup{}
 	}
 
@@ -102,7 +102,7 @@ func GetTeacherDayMarkup(c tele.Context, employee string, date string, messageId
 	current, err := time.Parse("02.01.2006", date)
 
 	if err != nil {
-		LogError(err, c)
+		LogError(c, err)
 		return &tele.ReplyMarkup{}
 	}
 

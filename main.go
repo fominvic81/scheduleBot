@@ -12,6 +12,12 @@ import (
 )
 
 func main() {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Println("Recover: ", r)
+		}
+	}()
+
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Failed to load .env file")

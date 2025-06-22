@@ -50,6 +50,7 @@ func Init(token string, database *sql.DB) {
 	}
 	setCommands(b)
 
+	b.Use(RecoverMiddleware)
 	b.Use(func(next tele.HandlerFunc) tele.HandlerFunc {
 		return func(c tele.Context) error {
 			c.Set("database", database)

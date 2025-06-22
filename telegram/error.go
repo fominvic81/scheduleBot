@@ -7,7 +7,7 @@ import (
 )
 
 func ErrorHandler(err error, c tele.Context) {
-	LogError(err, c)
+	LogError(c, err)
 
 	err2 := c.Send("Сталася помилка")
 	if err2 != nil {

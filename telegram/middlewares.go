@@ -3,6 +3,8 @@ package telegram
 import (
 	"database/sql"
 	"errors"
+	"fmt"
+	"log"
 	"sync"
 	"time"
 
@@ -17,6 +19,19 @@ func EmptyStrAsNil(str string) *string {
 		return nil
 	}
 	return &str
+}
+
+func RecoverMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
+	return func(c tele.Context) error {
+		defer func() {
+			if r := recover(); r != nil {
+				text := fmt.Sprintf("Recover: %v", r)
+				log.Println(text)
+				Report(c, text)
+			}
+		}()
+		return next(c)
+	}
 }
 
 func LogMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
@@ -121,7 +136,7 @@ func MetricsMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 		database := c.Get("database").(*sql.DB)
 
 		if err := db.WriteMetric(database, metric); err != nil {
-			LogError(err, c)
+			LogError(c, err)
 		}
 
 		return next(c)
