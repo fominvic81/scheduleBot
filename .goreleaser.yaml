@@ -9,9 +9,11 @@ before:
 
 builds:
   - env:
-      - CGO_ENABLED=0
+      - CGO_ENABLED=1
     goos:
       - linux
+    goarch:
+      - amd64
 
 archives:
   - formats: [tar.gz]
