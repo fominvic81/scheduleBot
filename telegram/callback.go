@@ -229,11 +229,14 @@ func CallbackDataHandler(c tele.Context) error {
 			}
 
 			var keyboard [][]tele.InlineButton
+			numSelected := len(subjects)
+
 			for hashed, subject := range subjects {
 				hidden := slices.Contains(user.Settings.HiddenSubjects, subject)
 				prefix := []string{"❌", "✅"}[boolToInt(!hidden)]
 				statusText := "off"
 				if hidden {
+					numSelected -= 1
 					statusText = "on"
 				}
 
@@ -250,8 +253,6 @@ func CallbackDataHandler(c tele.Context) error {
 				{Text: "Вимкнути всі ❌", Data: "settings/disciplines:all-off"},
 				{Text: "Ввімкнути всі ✅", Data: "settings/disciplines:all-on"},
 			})
-
-			numSelected := len(subjects) - len(user.Settings.HiddenSubjects)
 
 			text := "Фільтрація дисциплін"
 			if numSelected < 6 {
