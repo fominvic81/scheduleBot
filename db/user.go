@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 )
 
@@ -10,6 +11,10 @@ const (
 	UserStateNone = iota
 	UserStateSearchGroup
 	UserStateSearchTeacher
+)
+
+const (
+	UserSearchTypeEmployee = iota
 )
 
 type User struct {
@@ -194,4 +199,50 @@ func GetAdminUsers(db *sql.DB) ([]User, error) {
 	}
 
 	return users, nil
+}
+
+func (user *User) GetSearches(searchType int) ([]string, error) {
+	rows, err := user.db.Query(`SELECT value FROM user_searches WHERE user_id = ? AND type = ?`, user.Id, searchType)
+	if err != nil {
+		return []string{}, err
+	}
+	values := []string{}
+	for rows.Next() {
+		value := ""
+		if err := rows.Scan(&value); err != nil {
+			return []string{}, err
+		}
+		values = append(values, value)
+	}
+	return values, nil
+}
+
+func (user *User) SetSearches(searchType int, values []string) error {
+	tx, err := user.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	if _, err := tx.Exec("DELETE FROM user_searches WHERE user_id = ? AND type = ?", user.Id, searchType); err != nil {
+		return err
+	}
+
+	if len(values) > 0 {
+		insertQuery := "INSERT INTO user_searches (user_id, type, value) VALUES "
+		insertValues := []any{}
+		for _, value := range values {
+			insertQuery += "(?,?,?),"
+			insertValues = append(insertValues, fmt.Sprint(user.Id), fmt.Sprint(searchType), value)
+		}
+		insertQuery = insertQuery[0 : len(insertQuery)-1]
+
+		if _, err := tx.Exec(insertQuery, insertValues...); err != nil {
+			return err
+		}
+	}
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+	return nil
 }

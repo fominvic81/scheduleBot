@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"slices"
 	"strings"
-	"time"
 
 	"github.com/fominvic81/scheduleBot/api"
 	"github.com/fominvic81/scheduleBot/db"
@@ -87,6 +86,47 @@ func SearchGroupHandler(c tele.Context) error {
 	return nil
 }
 
+func GetSearchTeacherReplyMarkup(c tele.Context) (tele.ReplyMarkup, bool) {
+	user := c.Get("user").(*db.User)
+
+	cancelBtn := []tele.InlineButton{{
+		Text: "Скасувати пошук ❌",
+		Data: fmt.Sprintf("set-state:%v", db.UserStateNone),
+	}}
+
+	searches, err := user.GetSearches(db.UserSearchTypeEmployee)
+	if err != nil {
+		LogError(c, err)
+		return tele.ReplyMarkup{InlineKeyboard: [][]tele.InlineButton{cancelBtn}}, false
+	}
+
+	employeesAndChairs, success, err := api.GetAllEmployeesAndChairs()
+	LogError(c, err)
+	if !success {
+		return tele.ReplyMarkup{InlineKeyboard: [][]tele.InlineButton{cancelBtn}}, false
+	}
+
+	buttons := make([][]tele.InlineButton, 0, len(searches)+1)
+
+	for _, search := range searches {
+		for _, employee := range employeesAndChairs.Employees {
+			if employee.Key == search {
+				buttons = append(buttons, []tele.InlineButton{{
+					Text: employee.Value,
+					Data: "update-teacher:" + employee.Key + "|today",
+				}})
+				break
+			}
+		}
+	}
+
+	slices.Reverse(buttons)
+	hasHistory := len(buttons) > 0
+	buttons = append(buttons, cancelBtn)
+
+	return tele.ReplyMarkup{InlineKeyboard: buttons}, hasHistory
+}
+
 func SetSearchTeacherHandler(c tele.Context) error {
 	user := c.Get("user").(*db.User)
 
@@ -95,14 +135,15 @@ func SetSearchTeacherHandler(c tele.Context) error {
 		return nil
 	}
 
-	markup := &tele.ReplyMarkup{
-		InlineKeyboard: [][]tele.InlineButton{{{
-			Text: "Скасувати пошук ❌",
-			Data: fmt.Sprintf("set-state:%v", db.UserStateNone),
-		}}},
-	}
-	if err := c.Send("Введіть ім'я викладача", markup); err != nil {
-		return err
+	markup, hasHistory := GetSearchTeacherReplyMarkup(c)
+	if hasHistory {
+		if err := c.Send("Введіть ім'я викладача, або виберіть з історії", &markup); err != nil {
+			return err
+		}
+	} else {
+		if err := c.Send("Введіть ім'я викладача", &markup); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -163,7 +204,7 @@ func SearchTeacherHandler(c tele.Context) error {
 	for _, employee := range results {
 		buttons = append(buttons, []tele.InlineButton{{
 			Text: employee.Value,
-			Data: "update-teacher:" + employee.Key + "|" + time.Now().Format("02.01.2006"),
+			Data: "update-teacher:" + employee.Key + "|today",
 		}})
 		if len(buttons) >= 50 {
 			buttons = append(buttons, []tele.InlineButton{{

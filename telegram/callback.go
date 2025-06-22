@@ -291,6 +291,22 @@ func CallbackDataHandler(c tele.Context) error {
 		case "update-teacher":
 			user.State = db.UserStateNone
 
+			searches, err := user.GetSearches(db.UserSearchTypeEmployee)
+			if err != nil {
+				LogError(c, err)
+			} else {
+				searches = slices.DeleteFunc(searches, func(search string) bool {
+					return search == value
+				})
+				searches = append(searches, value)
+				if len(searches) > 6 {
+					searches = searches[len(searches)-6:]
+				}
+				if err := user.SetSearches(db.UserSearchTypeEmployee, searches); err != nil {
+					return err
+				}
+			}
+
 			employee := api.KeyValue{
 				Key:   value,
 				Value: "",

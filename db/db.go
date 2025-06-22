@@ -123,5 +123,21 @@ func Init() (*sql.DB, error) {
 		return nil, err
 	}
 
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS user_searches (
+		user_id INTEGER NOT NULL,
+		type    INTEGER NOT NULL,
+		value   TEXT    NOT NULL,
+
+		FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE
+	)`)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = db.Exec("CREATE INDEX IF NOT EXISTS user_searches_user_id_index on user_searches (user_id)")
+	if err != nil {
+		return nil, err
+	}
+
 	return db, nil
 }

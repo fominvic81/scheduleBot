@@ -33,6 +33,9 @@ func GetAllEmployeesAndChairs() (EmployeesAndChairs, bool, error) {
 		slices.SortFunc(all.Employees, func(a, b KeyValue) int {
 			return collator.CompareString(a.Value, b.Value)
 		})
+		all.Employees = slices.CompactFunc(all.Employees, func(a, b KeyValue) bool {
+			return a.Key == b.Key
+		})
 
 		return all, nil
 	})
