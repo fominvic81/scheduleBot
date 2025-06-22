@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"runtime/debug"
 	"sync"
 	"time"
 
@@ -25,7 +26,7 @@ func RecoverMiddleware(next tele.HandlerFunc) tele.HandlerFunc {
 	return func(c tele.Context) error {
 		defer func() {
 			if r := recover(); r != nil {
-				text := fmt.Sprintf("Recover: %v", r)
+				text := fmt.Sprintf("Recover: %v, %v", r, string(debug.Stack()))
 				log.Println(text)
 				Report(c, text)
 			}

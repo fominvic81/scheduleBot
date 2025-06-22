@@ -366,7 +366,7 @@ func CallbackDataHandler(c tele.Context) error {
 						return err
 					}
 
-					day.MessageIds = append(day.MessageIds, msg.ID)
+					day.MessageIds = append(day.MessageIds, c.Message().ID)
 
 					if !lastIteration {
 						messageIdsToDelete = append(messageIdsToDelete, fmt.Sprintf("%d", msg.ID))

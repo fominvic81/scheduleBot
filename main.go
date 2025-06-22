@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"runtime/debug"
 
 	"github.com/fominvic81/scheduleBot/db"
 	"github.com/fominvic81/scheduleBot/telegram"
@@ -14,7 +15,7 @@ import (
 func main() {
 	defer func() {
 		if r := recover(); r != nil {
-			log.Println("Recover: ", r)
+			log.Println("Recover:", r, string(debug.Stack()))
 		}
 	}()
 
