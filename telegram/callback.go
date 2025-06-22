@@ -351,7 +351,7 @@ func CallbackDataHandler(c tele.Context) error {
 			} else {
 				day := &schedule[0]
 
-				texts := FormatDay(c, day, false)
+				texts := FormatDay(c, day, true)
 				messageIdsToDelete := []string{}
 				for j, text := range texts {
 					lastIteration := j == len(texts)-1
