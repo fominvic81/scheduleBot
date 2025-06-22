@@ -16,11 +16,6 @@ func main() {
 	if err != nil {
 		log.Fatal("Failed to load .env file")
 	}
-	testFile, err := os.Create("test")
-	if err != nil {
-		log.Fatal("Failed to init db." + err.Error())
-	}
-	testFile.Close()
 
 	database, err := db.Init()
 
