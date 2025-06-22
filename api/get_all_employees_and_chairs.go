@@ -28,6 +28,10 @@ func GetAllEmployeesAndChairs() (EmployeesAndChairs, bool, error) {
 			all.Employees = append(all.Employees, employeesAndChairs.Employees...)
 			all.Chairs = append(all.Chairs, employeesAndChairs.Chairs...)
 		}
+		all.Employees = append(all.Employees, KeyValue{
+			Value: "Циліндр Давид Мурадович",
+			Key:   "LDQ9WWJ0W5U8",
+		})
 		collator := collate.New(language.Ukrainian)
 
 		slices.SortFunc(all.Employees, func(a, b KeyValue) int {
