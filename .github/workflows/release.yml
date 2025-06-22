@@ -45,6 +45,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: ./dist
       - name: Upload to server
         uses: garygrossgarten/github-action-scp@release
         with:
