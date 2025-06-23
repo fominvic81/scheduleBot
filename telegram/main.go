@@ -68,6 +68,7 @@ func Init(token string, database *sql.DB) {
 	for _, command := range commands {
 		b.Handle("/"+command.Text, command.Handler)
 	}
+	b.Handle("/send", SendHandler)
 
 	b.Handle(tele.OnText, TextHandler)
 	b.Handle(tele.OnCallback, CallbackDataHandler)

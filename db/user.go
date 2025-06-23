@@ -56,7 +56,7 @@ func (user *User) scan(scanner interface{ Scan(src ...any) error }) error {
 	return err
 }
 
-func GetOrCreateUser(db *sql.DB, id int64, firstname string) (*User, error) {
+func GetUser(db *sql.DB, id int64) (*User, error) {
 	row := db.QueryRow(`SELECT 
 		id,
 		messages,
@@ -75,10 +75,44 @@ func GetOrCreateUser(db *sql.DB, id int64, firstname string) (*User, error) {
 
 	user := User{db: db}
 
-	err := user.scan(row)
+	if err := user.scan(row); err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+func GetUserByUsername(db *sql.DB, username string) (*User, error) {
+	row := db.QueryRow(`SELECT 
+		id,
+		messages,
+		state,
+		firstname,
+		lastname,
+		username,
+		faculty,
+		educationForm,
+		course,
+		studyGroup,
+		isAdmin,
+		keyboardVersion,
+		banned_until
+	FROM users WHERE username = ?`, username)
+
+	user := User{db: db}
+
+	if err := user.scan(row); err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+func GetOrCreateUser(db *sql.DB, id int64, firstname string) (*User, error) {
+	user, err := GetUser(db, id)
 
 	if errors.Is(err, sql.ErrNoRows) {
-		row = user.db.QueryRow(`
+		row := user.db.QueryRow(`
 			INSERT INTO users (id, firstname) VALUES (?, ?) RETURNING
 				id,
 				messages,
@@ -110,7 +144,7 @@ func GetOrCreateUser(db *sql.DB, id int64, firstname string) (*User, error) {
 
 	user.Settings = settings
 
-	return &user, nil
+	return user, nil
 }
 
 func (user *User) Save() error {
