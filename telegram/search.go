@@ -13,7 +13,7 @@ import (
 func SearchGroupHandler(c tele.Context) error {
 	user := c.Get("user").(*db.User)
 
-	groups, success, err := api.GetAllGroups()
+	groups, success, err := api.GetAllStudyGroups()
 	if !success {
 		return err
 	}
@@ -224,6 +224,38 @@ func SearchTeacherHandler(c tele.Context) error {
 	}
 
 	if err = c.Send("Виберіть викладача ", markup); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func MyGroupHandler(c tele.Context) error {
+	user := c.Get("user").(*db.User)
+
+	if user.StudyGroup == nil {
+		if err := c.Send("Ви не вибрали групу"); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	groups, success, err := api.GetAllStudyGroups()
+	if !success {
+		return err
+	}
+	LogError(c, err)
+
+	for _, group := range groups {
+		if group.Group.Key == *user.StudyGroup {
+			if err := c.Send(group.Group.Value + " (" + group.Faculty.Value + ", " + group.EducationForm.Value + ", " + group.Course.Key + " курс)"); err != nil {
+				return err
+			}
+			return nil
+		}
+	}
+
+	if err := c.Send("Ви не вибрали групу"); err != nil {
 		return err
 	}
 

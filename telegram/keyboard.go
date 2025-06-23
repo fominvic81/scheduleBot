@@ -34,6 +34,7 @@ func GetKeyboards() []Keyboard {
 			{
 				{Text: "Стисло(два тижні)", Handler: ShortHandler},
 				{Text: "Знайти предмет", Handler: SubjectHandler},
+				{Text: "Моя група", Handler: MyGroupHandler},
 			},
 			{
 				{Text: "Змінити групу", Handler: AskGroup},

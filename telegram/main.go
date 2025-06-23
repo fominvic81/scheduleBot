@@ -13,7 +13,7 @@ func preload() {
 	if _, _, err := api.GetAllEmployeesAndChairs(); err != nil {
 		log.Println(err)
 	}
-	if _, _, err := api.GetAllGroups(); err != nil {
+	if _, _, err := api.GetAllStudyGroups(); err != nil {
 		log.Println(err)
 	}
 }

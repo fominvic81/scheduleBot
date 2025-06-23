@@ -89,7 +89,7 @@ func CallbackDataHandler(c tele.Context) error {
 				return err
 			}
 		case "group":
-			groups, success, err := api.GetAllGroups()
+			groups, success, err := api.GetAllStudyGroups()
 			if !success {
 				return err
 			}

@@ -9,7 +9,7 @@ type Group struct {
 	Group         KeyValue
 }
 
-func GetAllGroups() ([]Group, bool, error) {
+func GetAllStudyGroups() ([]Group, bool, error) {
 	return LazyCache("GetAllGroups", time.Hour, func() ([]Group, error) {
 		filters, err := GetFilters()
 

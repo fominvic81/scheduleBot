@@ -29,6 +29,7 @@ func GetCommands() []Command {
 		{Text: "setgroup", Description: "Змінити групу", Handler: AskGroup},
 		{Text: "setdata", Description: "Змінити факультет і групу", Handler: AskFaculty},
 		{Text: "teacher", Description: "Знайти викладача", Handler: SetSearchTeacherHandler},
+		{Text: "mygroup", Description: "Моя група", Handler: MyGroupHandler},
 
 		{Text: "settings", Description: "Налаштування", Handler: SettingsHandler},
 	}
