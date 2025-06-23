@@ -9,7 +9,6 @@ import (
 
 func columnExists(db *sql.DB, table string, column string) (bool, error) {
 	res, err := db.Query(fmt.Sprintf("PRAGMA table_info(%s)", table))
-
 	if err != nil {
 		return false, err
 	}
@@ -134,7 +133,22 @@ func Init() (*sql.DB, error) {
 		return nil, err
 	}
 
-	_, err = db.Exec("CREATE INDEX IF NOT EXISTS user_searches_user_id_index on user_searches (user_id)")
+	_, err = db.Exec("CREATE INDEX IF NOT EXISTS user_searches_user_id_index ON user_searches (user_id)")
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS forwarded_messages (
+		chat_id             INTEGER NOT NULL,
+		message_id          INTEGER NOT NULL,
+		original_chat_id    INTEGER NOT NULL,
+		original_message_id INTEGER NOT NULL
+	)`)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = db.Exec("CREATE INDEX IF NOT EXISTS forwarded_messages_chat_id_message_id_index ON forwarded_messages (chat_id, message_id)")
 	if err != nil {
 		return nil, err
 	}
