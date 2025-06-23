@@ -64,8 +64,16 @@ func TextHandler(c tele.Context) error {
 			}
 
 		}
-		if originalChatId != nil && originalMessageId != nil {
-			if _, err := c.Bot().Copy(tele.ChatID(*originalChatId), c.Message(), &tele.ReplyParams{MessageID: *originalMessageId}); err != nil {
+		if originalChatId != nil {
+			sendOptions := tele.SendOptions{}
+			if originalMessageId != nil {
+				sendOptions = tele.SendOptions{ReplyTo: &tele.Message{ID: *originalMessageId, Chat: &tele.Chat{ID: *originalChatId}}}
+			}
+			if _, err := c.Bot().Copy(tele.ChatID(*originalChatId), c.Message(), &sendOptions); err != nil {
+				return err
+			}
+		} else {
+			if err := c.Send("Не вдалося визначити чат"); err != nil {
 				return err
 			}
 		}
