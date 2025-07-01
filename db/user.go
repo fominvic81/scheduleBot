@@ -112,7 +112,7 @@ func GetOrCreateUser(db *sql.DB, id int64, firstname string) (*User, error) {
 	user, err := GetUser(db, id)
 
 	if errors.Is(err, sql.ErrNoRows) {
-		row := user.db.QueryRow(`
+		row := db.QueryRow(`
 			INSERT INTO users (id, firstname) VALUES (?, ?) RETURNING
 				id,
 				messages,
@@ -131,10 +131,10 @@ func GetOrCreateUser(db *sql.DB, id int64, firstname string) (*User, error) {
 			id,
 			firstname,
 		)
-		err = user.scan(row)
-	}
-	if err != nil {
-		return nil, err
+		user = &User{db: db}
+		if err = user.scan(row); err != nil {
+			return nil, err
+		}
 	}
 
 	settings, err := GetOrCreateUserSettings(db, id)
